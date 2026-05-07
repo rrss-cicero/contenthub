@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IBSA Iberia · Content Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root{--navy:#0a1f44;--navy2:#0d2d6b;--accent:#3b82f6;--border:#e2e8f0;--gray:#f0f4ff;--text:#1e293b;--muted:#64748b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+  header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 60%,#1a3f8f 100%);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,0,0,.3);position:sticky;top:0;z-index:100}
+  .h-left{display:flex;align-items:center;gap:12px}
+  .btn-back{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:5px}
+  .btn-back:hover{background:rgba(255,255,255,.22)}
+  .h-brand{color:white;font-size:16px;font-weight:800}
+  .h-pill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+  .h-right{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.7);font-size:13px}
+  .user-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:white;border:1.5px solid rgba(255,255,255,.3)}
+  .tab-bar{background:linear-gradient(135deg,var(--navy),var(--navy2));border-top:1px solid rgba(255,255,255,.1)}
+  .tab-bar-inner{max-width:1040px;margin:0 auto;padding:0 24px;display:flex;gap:2px;overflow-x:auto}
+  .tab-bar-btn{padding:10px 18px;font-size:12px;font-weight:600;border:none;cursor:pointer;font-family:inherit;border-radius:8px 8px 0 0;background:transparent;color:rgba(255,255,255,.55);white-space:nowrap;flex-shrink:0}
+  .tab-bar-btn.active{background:#f8faff;color:var(--navy);box-shadow:0 -2px 0 0 var(--accent) inset}
+  .main{max-width:1040px;margin:0 auto;padding:28px 24px}
+  .card{background:white;border-radius:16px;padding:22px 26px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:18px;border:1px solid var(--border)}
+  label.lbl{font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
+  input,select,textarea{border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;color:var(--text);outline:none;background:#FAFBFC;font-family:inherit}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
+  .note-card{background:white;border-radius:12px;padding:14px 16px;border:1px solid var(--border);box-shadow:0 1px 6px rgba(0,0,0,.05);border-left:4px solid}
+  .dropzone{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;font-size:12px;color:var(--muted)}
+  .dropzone:hover{border-color:var(--accent);background:#EFF6FF}
+  .pub-card{background:white;border-radius:14px;padding:16px 18px;border:1px solid var(--border);box-shadow:0 1px 8px rgba(0,0,0,.06);position:relative}
+  .pub-card.approved{border-left:4px solid #059669;background:#F0FDF4}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .stat{background:white;border-radius:12px;padding:14px 16px;border:1px solid var(--border);text-align:center}
+  .stat-val{font-size:22px;font-weight:800;color:var(--navy)}
+  .stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+  .btn-primary{background:#2563eb;color:white;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-primary:hover{background:#1d4ed8}
+  .btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
+  .btn-secondary{background:white;color:#444;border:1.5px solid var(--border);border-radius:10px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-danger{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+  .modal{background:white;border-radius:20px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+  .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .modal-body{padding:20px 24px}
+  .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+  .general-feedback{background:white;border-radius:14px;border:1.5px solid var(--border);padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .general-feedback-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:12px;text-transform:uppercase}
+  .valoration-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .val-btn{border:2px solid var(--border);border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:white}
+  .val-btn.aprobado{border-color:#059669;background:#D1FAE5;color:#065F46}
+  .val-btn.revisar{border-color:#D97706;background:#FEF3C7;color:#92400E}
+  .val-btn.rechazar{border-color:#DC2626;background:#FEE2E2;color:#991B1B}
+  .btn-regen-feedback{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px}
+  .fb-note{font-size:12px;color:#374151;white-space:pre-wrap;padding:6px 8px;border-radius:6px;cursor:pointer;background:#FFFBEB;border:1px solid #FDE68A;margin-top:6px;line-height:1.5}
+  .fb-note:hover{background:#FEF3C7}
+  .fb-empty{font-size:12px;color:#bbb;font-style:italic;cursor:pointer;padding:4px 6px;border-radius:6px;margin-top:4px}
+  .fb-empty:hover{background:#FFFBEB;color:#92400E}
+  .fb-meta{font-size:10px;color:#aaa;margin-top:3px}
+  .btn-rewrite-pub{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+  .btn-rewrite-pub:disabled{opacity:.5;cursor:not-allowed}
+  .approve-btn{background:none;border:2px solid var(--border);border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s}
+  .approve-btn.on{background:#059669;border-color:#059669;color:white}
+  /* Calendar tab */
+  .cal-dropzone{border:2px dashed var(--border);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer}
+  .cal-dropzone:hover{border-color:var(--accent);background:#EFF6FF}
+  /* Copy especial */
+  .special-section{background:white;border-radius:16px;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:2px solid #BFDBFE}
+  @media(max-width:640px){.stats-row{grid-template-columns:repeat(2,1fr)}.main{padding:16px}header{padding:0 16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-left">
+    <a href="index.html" class="btn-back">← Dashboard</a>
+    <div style="width:1px;height:24px;background:rgba(255,255,255,.2)"></div>
+    <div class="h-brand">💎 IBSA Iberia</div>
+    <span class="h-pill">LinkedIn</span>
+  </div>
+  <div class="h-right">
+    <div class="user-avatar" id="user-avatar"></div>
+    <span id="user-name"></span>
+  </div>
+</header>
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab-bar-btn active" id="tab-calendario" onclick="switchTab('calendario')">📅 Calendario</button>
+    <button class="tab-bar-btn" id="tab-briefing" onclick="switchTab('briefing')">📋 Briefing <span id="briefing-count"></span></button>
+    <button class="tab-bar-btn" id="tab-aprobados" onclick="switchTab('aprobados')">✅ Copys aprobados <span id="aprobados-count"></span></button>
+    <button class="tab-bar-btn" id="tab-bateria" onclick="switchTab('bateria')">🔋 Batería <span id="bateria-count"></span></button>
+    <button class="tab-bar-btn" id="tab-especial" onclick="switchTab('especial')">⭐ Copy especial</button>
+    <button class="tab-bar-btn" id="tab-historial" onclick="switchTab('historial')">🗂️ Historial <span id="historial-count"></span></button>
+  </div>
+</div>
+<div class="main">
+  <div id="pane-calendario"></div>
+  <div id="pane-briefing" style="display:none"></div>
+  <div id="pane-aprobados" style="display:none"></div>
+  <div id="pane-bateria" style="display:none"></div>
+  <div id="pane-especial" style="display:none"></div>
+  <div id="pane-historial" style="display:none"></div>
+</div>
+<!-- Note modal -->
+<div class="modal-overlay" id="note-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 style="font-size:16px;font-weight:700" id="note-modal-title">Nuevo apunte</h2>
+      <button onclick="closeNoteModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Tipo</label>
+          <select id="nm-tipo" style="width:100%">
+            <option value="evento">🗓️ Evento / Congreso</option>
+            <option value="agenda">📆 Agenda corporativa</option>
+            <option value="dia_mundial">🌍 Día Mundial</option>
+            <option value="lanzamiento">🚀 Lanzamiento</option>
+            <option value="formacion">🎓 Formación</option>
+            <option value="persona">👤 Persona / Equipo</option>
+            <option value="fundacion">🔬 IBSA Foundation</option>
+            <option value="otro">📌 Otro</option>
+          </select></div>
+        <div><label class="lbl">Área</label>
+          <select id="nm-area" style="width:100%">
+            <option value="">Sin asignar</option>
+            <option>General</option><option>Global</option>
+            <option>Medicina Reproductiva</option><option>Osteoarticular</option>
+            <option>Dermoestética</option><option>IBSA Foundation</option>
+          </select></div>
+      </div>
+      <div style="margin-bottom:12px"><label class="lbl">Título</label><input id="nm-titulo" style="width:100%" placeholder="Nombre del evento…"/></div>
+      <div style="margin-bottom:12px"><label class="lbl">Fecha / Rango</label><input id="nm-fecha" style="width:100%" placeholder="Ej: 12-14 febrero…"/></div>
+      <div style="margin-bottom:12px"><label class="lbl">Contenido / Info</label>
+        <textarea id="nm-contenido" rows="5" style="width:100%;resize:none" placeholder="Pega el texto del email, ponentes, descripción…"></textarea></div>
+      <div>
+        <label class="lbl">Archivos adjuntos</label>
+        <div class="dropzone" id="nm-dropzone" onclick="document.getElementById('nm-file').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#3b82f6'" ondragleave="this.style.borderColor=''"
+          ondrop="handleNoteDrop(event)">📎 PDF, Word, imágenes · Arrastra o haz clic</div>
+        <input type="file" id="nm-file" multiple accept=".pdf,.docx,.txt,image/*" style="display:none" onchange="handleNoteFiles(this.files)"/>
+        <div id="nm-files-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeNoteModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveNoteModal()">Guardar apunte</button>
+    </div>
+  </div>
+</div>
+<!-- Pub modal -->
+<div class="modal-overlay" id="pub-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 style="font-size:16px;font-weight:700">Editar publicación</h2>
+      <button onclick="closePubModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Pilar</label><select id="pm-pilar" style="width:100%"><option>Persona</option><option>Calidad</option><option>Innovación</option><option>Responsabilidad</option></select></div>
+        <div><label class="lbl">Área</label><select id="pm-area" style="width:100%">
+          <option>General</option><option>Global</option><option>Medicina Reproductiva</option><option>Osteoarticular</option><option>Dermoestética</option><option>IBSA Foundation</option>
+        </select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Fecha</label><input type="date" id="pm-fecha" style="width:100%"/></div>
+        <div><label class="lbl">Estado</label><select id="pm-estado" style="width:100%"><option>Borrador</option><option>Aprobado</option><option>Publicado</option><option>Cancelado</option></select></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="lbl">Título del post</label>
+        <input id="pm-titulo" style="width:100%" placeholder="Título corto visible en la batería…"/>
+      </div>
+      <div style="margin-bottom:12px"><label class="lbl">Copy</label>
+        <textarea id="pm-copy" rows="7" style="width:100%;resize:none"></textarea>
+        <p id="pm-len" style="font-size:11px;color:var(--muted);margin-top:4px"></p></div>
+      <div style="margin-bottom:12px"><label class="lbl">URL</label><input id="pm-url" style="width:100%" placeholder="https://…"/></div>
+      <div style="margin-bottom:12px"><label class="lbl">Multimedia (para Canva)</label><input id="pm-multimedia" style="width:100%"/></div>
+      <div style="margin-bottom:12px"><label class="lbl">Apunte de referencia</label>
+        <select id="pm-ref-note" style="width:100%"><option value="">— Sin referencia —</option></select></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <input type="checkbox" id="pm-programado" style="width:16px;height:16px"/>
+        <label for="pm-programado" style="font-size:13px">Programado en LinkedIn</label></div>
+      <div><label class="lbl">URL LinkedIn</label><input id="pm-urlLinkedin" style="width:100%" placeholder="https://linkedin.com/…"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closePubModal()">Cancelar</button>
+      <button class="btn-primary" onclick="savePubModal()">Guardar</button>
+    </div>
+  </div>
+</div>
+<!-- Approved copy modal -->
+<div class="modal-overlay" id="approved-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 style="font-size:16px;font-weight:700" id="approved-modal-title">Nuevo copy aprobado</h2>
+      <button onclick="closeApprovedModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#aaa">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Pilar</label><select id="am-pilar" style="width:100%"><option>Persona</option><option>Calidad</option><option>Innovación</option><option>Responsabilidad</option></select></div>
+        <div><label class="lbl">Área</label><select id="am-area" style="width:100%">
+          <option>General</option><option>Global</option><option>Medicina Reproductiva</option><option>Osteoarticular</option><option>Dermoestética</option><option>IBSA Foundation</option>
+        </select></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div><label class="lbl">Fecha</label><input type="date" id="am-fecha" style="width:100%"/></div>
+        <div><label class="lbl">Título</label><input id="am-titulo" style="width:100%" placeholder="Título corto…"/></div>
+      </div>
+      <div style="margin-bottom:12px"><label class="lbl">Copy aprobado</label>
+        <textarea id="am-copy" rows="7" style="width:100%;resize:none" placeholder="Pega aquí el copy ya aprobado…"></textarea></div>
+      <div style="margin-bottom:12px"><label class="lbl">Prompt personalizado (opcional)</label>
+        <textarea id="am-prompt" rows="2" style="width:100%;resize:none" placeholder="Instrucciones específicas si necesitas variaciones…"></textarea></div>
+      <div><label class="lbl">Multimedia</label><input id="am-multimedia" style="width:100%"/></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeApprovedModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveApprovedModal()">Guardar copy aprobado</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Auth ──────────────────────────────────────
+const USERS=[{id:"admin",pass:"admin2026",role:"admin",name:"Administrador"},{id:"editor",pass:"editor2026",role:"editor",name:"Copywriter"}];
+let currentUser=null;
+try{const s=JSON.parse(localStorage.getItem("ch_session")||"null");if(s&&Date.now()-s.ts<8*3600*1000)currentUser=USERS.find(u=>u.id===s.id);}catch(_){}
+if(!currentUser){window.location.href="index.html";}
+else{
+  document.getElementById("user-avatar").textContent=currentUser.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  document.getElementById("user-name").textContent=currentUser.name;
+}
+
+// ── Constants ─────────────────────────────────
+const HIST_KEY="ibsa_battery_history_v2";
+const BRIEF_KEY="ibsa_briefing_v2";
+const APPROVED_KEY="ibsa_approved_v2";
+const CAL_KEY="ibsa_calendar_v2";
+const PILARES=["Persona","Calidad","Innovación","Responsabilidad"];
+const AREAS=["General","Global","Medicina Reproductiva","Osteoarticular","Dermoestética","IBSA Foundation"];
+const NOTE_TYPES=[
+  {value:"evento",label:"🗓️ Evento / Congreso",color:"#1d4ed8",bg:"#eff6ff",border:"#bfdbfe"},
+  {value:"agenda",label:"📆 Agenda corporativa",color:"#7c3aed",bg:"#f5f3ff",border:"#ddd6fe"},
+  {value:"dia_mundial",label:"🌍 Día Mundial",color:"#15803d",bg:"#f0fdf4",border:"#bbf7d0"},
+  {value:"lanzamiento",label:"🚀 Lanzamiento",color:"#b45309",bg:"#fffbeb",border:"#fde68a"},
+  {value:"formacion",label:"🎓 Formación",color:"#0369a1",bg:"#e0f2fe",border:"#7dd3fc"},
+  {value:"persona",label:"👤 Persona / Equipo",color:"#be185d",bg:"#fdf2f8",border:"#fbcfe8"},
+  {value:"fundacion",label:"🔬 IBSA Foundation",color:"#0f766e",bg:"#f0fdfa",border:"#99f6e4"},
+  {value:"otro",label:"📌 Otro",color:"#475569",bg:"#f8fafc",border:"#e2e8f0"},
+];
+
+// ── Web Search ────────────────────────────────
+const SEARCH_API_URL="https://cicero-hub-backend.onrender.com/api/search";
+
+async function buscarURLsRelevantes(tema,area=''){
+  try{
+    const query=area?`${tema} ${area} noticias recientes`:`${tema} noticias recientes`;
+    console.log('🔍 Buscando URLs:',query);
+    const response=await fetch(SEARCH_API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:query,max_results:3})
+    });
+    if(!response.ok){console.warn('⚠️ Búsqueda fallida');return null;}
+    const data=await response.json();
+    if(data.results&&data.results.length>0){
+      console.log('✅ URLs encontradas:',data.results.length);
+      return{
+        resumen:data.answer||'',
+        urls:data.results.map(r=>r.url),
+        fuentes:data.results.map(r=>({
+          titulo:r.title,
+          url:r.url,
+          extracto:r.content?r.content.substring(0,150):''
+        }))
+      };
+    }
+    return null;
+  }catch(error){console.error('❌ Error en búsqueda:',error);return null;}
+}
+
+function formatearFuentesParaPrompt(fuentes){
+  if(!fuentes||fuentes.length===0)return'';
+  return`\n\nFUENTES ACTUALES (incluye URLs relevantes):\n${fuentes.map((f,i)=>`${i+1}. ${f.titulo}\n   ${f.url}\n   ${f.extracto}...`).join('\n\n')}`;
+}
+const PILAR_COLORS={Persona:"#1e40af|#eff6ff",Calidad:"#6b21a8|#faf5ff",Innovación:"#164e63|#ecfeff",Responsabilidad:"#14532d|#f0fdf4"};
+const AREA_COLORS={General:"#334155|#f1f5f9",Global:"#3730a3|#eef2ff","Medicina Reproductiva":"#9d174d|#fdf2f8",Osteoarticular:"#9a3412|#fff7ed",Dermoestética:"#9f1239|#fff1f2","IBSA Foundation":"#134e4a|#f0fdfa"};
+const STATUS_COLORS={Aprobado:"#065f46|#d1fae5",Borrador:"#374151|#f3f4f6",Publicado:"#1e40af|#eff6ff",Cancelado:"#991b1b|#fee2e2"};
+
+const SYSTEM_PROMPT=`Eres el community manager de IBSA Iberia, filial española de IBSA Group.
+REGLA CRÍTICA: Siempre "IBSA Iberia". NUNCA "IBSA" solo. NUNCA "En IBSA…" → siempre "En IBSA Iberia…"
+VOZ: Primera persona del plural. Tono cálido, riguroso, humano. Frases cortas. Sin jerga corporativa.
+COMPLIANCE: PROHIBIDO nombrar medicamentos, principios activos o productos comerciales. Sin claims terapéuticos sin evidencia. Tono de awareness para HCPs.
+HASHTAGS: máximo 2-3 por post. SOLO: #IBSA #CaringInnovation #IBSAIberia. Para IBSA Foundation usar #IBSAFoundation en lugar de uno. NO usar hashtags temáticos ni de patología.
+FORMATO: 8-12 publicaciones LinkedIn por batería, 1 cada 2-3 días. Equilibra pilares y áreas.
+Devuelve SOLO un array JSON válido sin markdown:
+[{"titulo":"Título corto del post","pilar":"Persona|Calidad|Innovación|Responsabilidad","area":"General|Global|Medicina Reproductiva|Osteoarticular|Dermoestética|IBSA Foundation","fecha":"YYYY-MM-DD","copy":"...","url":"","multimedia":"descripción breve para Canva","programado":false,"urlLinkedin":"","estado":"Borrador","refNote":""}]`;
+
+const AGENDA_PROMPT=`Eres el community manager de IBSA Iberia. Genera UN POST de LinkedIn de tipo AGENDA corporativa.
+El post debe: anunciar o resumir el evento con datos concretos (fecha, lugar, ponentes si los hay), usar primera persona del plural, sonar institucional pero cálido, incluir CTA claro (regístrate/únete/síguenos).
+COMPLIANCE: sin medicamentos ni principios activos.
+HASHTAGS: máximo 2-3. Solo #IBSA #CaringInnovation #IBSAIberia.
+Responde SOLO con JSON: {"titulo":"...","pilar":"...","area":"...","fecha":"YYYY-MM-DD","copy":"...","multimedia":"descripción Canva","url":"","programado":false,"urlLinkedin":"","estado":"Borrador","refNote":""}`;
+
+// ── State ─────────────────────────────────────
+let notes=[], publications=[], approvedCopies=[], batteryHistory=[], calendarImage=null;
+let activeTab="calendario";
+let editingNoteIdx=null, editingPubIdx=null, editingApprovedIdx=null, editingFeedbackIdx=null;
+let generalFeedback={text:"",valoration:"",editingText:false};
+let nmFiles=[];
+let mes=(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;})();
+let generating=false, filterPilar="", filterArea="";
+
+try{notes=JSON.parse(localStorage.getItem(BRIEF_KEY)||"[]");}catch(_){notes=[];}
+try{batteryHistory=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");}catch(_){batteryHistory=[];}
+try{approvedCopies=JSON.parse(localStorage.getItem(APPROVED_KEY)||"[]");}catch(_){approvedCopies=[];}
+try{calendarImage=localStorage.getItem(CAL_KEY)||null;}catch(_){calendarImage=null;}
+
+// ── Tab switching ─────────────────────────────
+function switchTab(tab){
+  activeTab=tab;
+  ["calendario","briefing","aprobados","bateria","especial","historial"].forEach(t=>{
+    document.getElementById("pane-"+t).style.display=t===tab?"block":"none";
+    document.getElementById("tab-"+t).classList.toggle("active",t===tab);
+  });
+  renderTab(tab);
+}
+function renderTab(tab){
+  if(tab==="calendario")renderCalendario();
+  else if(tab==="briefing")renderBriefing();
+  else if(tab==="aprobados")renderAprobados();
+  else if(tab==="bateria")renderBateria();
+  else if(tab==="especial")renderEspecial();
+  else renderHistorial();
+}
+function updateCounts(){
+  document.getElementById("briefing-count").textContent=notes.length?`(${notes.length})`:"";
+  document.getElementById("bateria-count").textContent=publications.length?`(${publications.length})`:"";
+  document.getElementById("aprobados-count").textContent=approvedCopies.length?`(${approvedCopies.length})`:"";
+  document.getElementById("historial-count").textContent=batteryHistory.length?`(${batteryHistory.length})`:"";
+}
+
+// ── CALENDARIO ────────────────────────────────
+function renderCalendario(){
+  updateCounts();
+  const pane=document.getElementById("pane-calendario");
+  pane.innerHTML=`
+    <div class="card">
+      <div style="font-weight:700;font-size:15px;margin-bottom:8px">📅 Calendario del mes</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Sube una captura del calendario de contenidos. La IA la leerá para respetar el orden y categorías al generar la batería.</p>
+      ${calendarImage
+        ?`<div style="position:relative;display:inline-block;margin-bottom:12px">
+            <img src="${calendarImage}" style="max-width:100%;border-radius:10px;border:1px solid var(--border)"/>
+            <button onclick="calendarImage=null;localStorage.removeItem('${CAL_KEY}');renderCalendario()" style="position:absolute;top:8px;right:8px;background:#DC2626;color:white;border:none;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer">Eliminar</button>
+          </div>`
+        :`<div class="cal-dropzone" onclick="document.getElementById('cal-file').click()"
+            ondragover="event.preventDefault();this.style.borderColor='#3b82f6'" ondragleave="this.style.borderColor=''"
+            ondrop="handleCalDrop(event)">
+            <div style="font-size:36px;margin-bottom:8px">🗓️</div>
+            <p style="font-weight:600;color:#555;font-size:14px">Arrastra el calendario aquí o haz clic</p>
+            <p style="font-size:12px;color:var(--muted);margin-top:4px">PNG, JPG, WebP</p>
+          </div>`}
+      <input type="file" id="cal-file" accept="image/*" style="display:none" onchange="handleCalFile(this.files[0])"/>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="btn-primary" onclick="switchTab('briefing')" style="padding:12px 28px;font-size:14px">Ir al briefing →</button>
+    </div>`;
+}
+async function handleCalFile(file){
+  if(!file)return;
+  const b64=await toB64(file);
+  calendarImage="data:"+file.type+";base64,"+b64;
+  localStorage.setItem(CAL_KEY,calendarImage);
+  renderCalendario();
+}
+async function handleCalDrop(e){e.preventDefault();e.currentTarget.style.borderColor="";await handleCalFile(e.dataTransfer.files[0]);}
+
+// ── BRIEFING ──────────────────────────────────
+function renderBriefing(){
+  updateCounts();
+  const pane=document.getElementById("pane-briefing");
+  pane.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--navy)">Bloc de briefing</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:3px">Añade apuntes según te llegue información. Se guardan automáticamente.</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="month" value="${mes}" onchange="mes=this.value" style="border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none"/>
+        <button class="btn-primary" onclick="openNoteModal()">+ Nuevo apunte</button>
+      </div>
+    </div>
+    ${notes.length===0
+      ?`<div style="background:white;border:2px dashed var(--border);border-radius:16px;padding:60px 20px;text-align:center">
+          <div style="font-size:40px;margin-bottom:10px">📋</div>
+          <p style="font-weight:600;color:#555;font-size:15px">El briefing está vacío</p>
+          <button class="btn-primary" onclick="openNoteModal()" style="margin-top:16px">+ Añadir primer apunte</button>
+        </div>`
+      :`<div style="display:flex;flex-direction:column;gap:10px">
+          ${notes.map((n,i)=>{
+            const t=NOTE_TYPES.find(x=>x.value===n.tipo)||NOTE_TYPES[7];
+            return `<div class="note-card" style="border-left-color:${t.color}">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+                  <span class="badge" style="color:${t.color};background:${t.bg};border-color:${t.border}">${t.label}</span>
+                  ${n.fecha?`<span style="font-size:11px;color:var(--muted)">${n.fecha}</span>`:""}
+                  ${n.area?`<span class="badge" style="color:#475569;background:#f8fafc;border-color:#e2e8f0">${n.area}</span>`:""}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                  <button onclick="openNoteModal(${i})" style="background:none;border:none;cursor:pointer;font-size:15px">✏️</button>
+                  <button onclick="deleteNote(${i})" style="background:none;border:none;cursor:pointer;font-size:15px">🗑️</button>
+                </div>
+              </div>
+              ${n.titulo?`<p style="font-weight:600;font-size:13px;margin-bottom:4px">${n.titulo}</p>`:""}
+              <p style="font-size:13px;color:#555;line-height:1.55">${n.contenido}</p>
+              ${(n.archivos||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">${n.archivos.map(f=>`<span class="badge" style="color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe">${f.kind==="image"?"🖼️":f.kind==="pdf"?"📄":"📝"} ${f.name}</span>`).join("")}</div>`:""}
+            </div>`;
+          }).join("")}
+          <button onclick="switchTab('bateria')" class="btn-primary" style="margin-top:8px;width:100%;padding:13px;font-size:14px">Tengo todo → Generar la batería 🚀</button>
+        </div>`}`;
+}
+function deleteNote(i){notes.splice(i,1);localStorage.setItem(BRIEF_KEY,JSON.stringify(notes));renderBriefing();updateCounts();}
+
+// ── COPYS APROBADOS ───────────────────────────
+function renderAprobados(){
+  updateCounts();
+  const pane=document.getElementById("pane-aprobados");
+  pane.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+      <div>
+        <h2 style="font-size:18px;font-weight:800;color:var(--navy)">Copys aprobados</h2>
+        <p style="font-size:13px;color:var(--muted);margin-top:3px">Posts ya escritos y aprobados. Se insertan en la batería con fondo verde, sin que la IA los modifique.</p>
+      </div>
+      <button class="btn-primary" onclick="openApprovedModal()">+ Añadir copy aprobado</button>
+    </div>
+    ${approvedCopies.length===0
+      ?`<div style="background:white;border:2px dashed var(--border);border-radius:16px;padding:60px 20px;text-align:center">
+          <div style="font-size:40px;margin-bottom:10px">✅</div>
+          <p style="font-weight:600;color:#555;font-size:15px">Sin copys aprobados aún</p>
+          <button class="btn-primary" onclick="openApprovedModal()" style="margin-top:16px">+ Añadir copy</button>
+        </div>`
+      :`<div style="display:flex;flex-direction:column;gap:10px">
+          ${approvedCopies.map((a,i)=>{
+            const pilarC=(PILAR_COLORS[a.pilar]||"#444|#f8fafc").split("|");
+            const areaC=(AREA_COLORS[a.area]||"#444|#f8fafc").split("|");
+            return `<div style="background:#D9EAD3;border:1px solid #a8d5a2;border-radius:14px;padding:16px 18px">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <span style="background:#059669;color:white;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ Aprobado</span>
+                  <span class="badge" style="color:${pilarC[0]};background:${pilarC[1]};border-color:${pilarC[0]}33">${a.pilar}</span>
+                  <span class="badge" style="color:${areaC[0]};background:${areaC[1]};border-color:${areaC[0]}33">${a.area}</span>
+                  ${a.fecha?`<span style="font-size:11px;color:#555">${a.fecha}</span>`:""}
+                </div>
+                <div style="display:flex;gap:4px;flex-shrink:0">
+                  <button onclick="openApprovedModal(${i})" style="background:none;border:none;cursor:pointer;font-size:15px">✏️</button>
+                  <button onclick="deleteApproved(${i})" style="background:none;border:none;cursor:pointer;font-size:15px">🗑️</button>
+                  <button onclick="addApprovedToBattery(${i})" style="background:#059669;color:white;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">+ Batería</button>
+                </div>
+              </div>
+              ${a.titulo?`<p style="font-weight:600;font-size:13px;margin-bottom:6px">${a.titulo}</p>`:""}
+              <p style="font-size:13px;color:#1a3a1a;line-height:1.6">${(a.copy||"").length>200?(a.copy||"").slice(0,200)+"…":a.copy}</p>
+              ${a.prompt?`<p style="font-size:11px;color:#555;margin-top:6px;font-style:italic">💡 ${a.prompt}</p>`:""}
+            </div>`;
+          }).join("")}
+        </div>`}`;
+}
+function addApprovedToBattery(i){
+  const a=approvedCopies[i];
+  publications.unshift({...a,estado:"Aprobado",isApproved:true,feedback:"",feedbackAuthor:"",feedbackDate:""});
+  saveBatteryHistory("Desde copys aprobados");
+  switchTab("bateria");
+}
+function deleteApproved(i){approvedCopies.splice(i,1);localStorage.setItem(APPROVED_KEY,JSON.stringify(approvedCopies));renderAprobados();updateCounts();}
+
+// ── BATERÍA ───────────────────────────────────
+function renderBateria(){
+  updateCounts();
+  const pane=document.getElementById("pane-bateria");
+  if(!publications.length){
+    pane.innerHTML=`<div style="text-align:center;padding:60px 20px">
+      <div style="font-size:40px;margin-bottom:10px">🔋</div>
+      <p style="font-weight:600;color:#555;font-size:15px">La batería está vacía</p>
+      <p style="font-size:13px;color:var(--muted);margin:8px 0 20px">Genera la batería desde el briefing, o añade posts manualmente.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="switchTab('briefing')">Ir al briefing</button>
+        <button class="btn-secondary" onclick="generateBattery()">🚀 Generar batería ahora</button>
+      </div>
+    </div>`;
+    return;
+  }
+  const total=publications.length;
+  const approved=publications.filter(p=>p.isApproved||p.estado==="Aprobado").length;
+  const programados=publications.filter(p=>p.programado).length;
+  const fbCount=publications.filter(p=>p.feedback).length;
+  const filtered=publications.filter(p=>(!filterPilar||p.pilar===filterPilar)&&(!filterArea||p.area===filterArea)).sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
+  const valBtns=["Aprobado","Revisar","Rechazar"].map(v=>{
+    const cls=v==="Aprobado"?"aprobado":v==="Revisar"?"revisar":"rechazar";
+    const active=generalFeedback.valoration===v;
+    return `<button class="val-btn ${active?cls:""}" onclick="setValoration('${v}')">${v==="Aprobado"?"✅":v==="Revisar"?"🔄":"❌"} ${v}</button>`;
+  }).join("");
+  pane.innerHTML=`
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" style="color:#1d4ed8">${total}</div><div class="stat-lbl">Total posts</div></div>
+      <div class="stat"><div class="stat-val" style="color:#15803d">${approved}</div><div class="stat-lbl">Aprobados</div></div>
+      <div class="stat"><div class="stat-val" style="color:#7c3aed">${programados}</div><div class="stat-lbl">Programados</div></div>
+      <div class="stat"><div class="stat-val" style="color:#b45309">${fbCount}</div><div class="stat-lbl">Con feedback</div></div>
+    </div>
+    <div class="general-feedback">
+      <div class="general-feedback-title">💬 Feedback general de la batería</div>
+      <div class="valoration-row">${valBtns}</div>
+      ${generalFeedback.editingText
+        ?`<textarea id="gfb-ta" rows="3" style="width:100%;border:1.5px solid #F59E0B;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:none;outline:none;background:#FFFBEB">${generalFeedback.text}</textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button onclick="generalFeedback.text=document.getElementById('gfb-ta').value;generalFeedback.editingText=false;renderBateria()" style="background:#F59E0B;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Guardar</button>
+            <button onclick="generalFeedback.editingText=false;renderBateria()" style="background:#eee;color:#444;border:none;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">Cancelar</button>
+          </div>`
+        :generalFeedback.text
+          ?`<div class="fb-note" onclick="generalFeedback.editingText=true;renderBateria()">${generalFeedback.text}</div>`
+          :`<div class="fb-empty" onclick="generalFeedback.editingText=true;renderBateria()">+ Añadir comentario general…</div>`
+      }
+      ${(generalFeedback.text||generalFeedback.valoration)&&!generalFeedback.editingText
+        ?`<button class="btn-regen-feedback" onclick="regenWithGeneralFeedback()">↺ Regenerar batería con este feedback</button>`:""}
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <select onchange="filterPilar=this.value;renderBateria()" style="border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none">
+          <option value="">Todos los pilares</option>${PILARES.map(p=>`<option ${filterPilar===p?"selected":""}>${p}</option>`).join("")}
+        </select>
+        <select onchange="filterArea=this.value;renderBateria()" style="border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit;outline:none">
+          <option value="">Todas las áreas</option>${AREAS.map(a=>`<option ${filterArea===a?"selected":""}>${a}</option>`).join("")}
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" style="font-size:12px;padding:8px 14px" onclick="addNewPub()">+ Añadir post</button>
+        <button onclick="generateBattery()" ${generating?"disabled":""} style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:10px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">🚀 Regenerar batería</button>
+        <button onclick="exportCSV()" style="background:#217346;color:white;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⬇ Excel</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${filtered.map(p=>{
+        const realIdx=publications.indexOf(p);
+        const pilarC=(PILAR_COLORS[p.pilar]||"#444|#f8fafc").split("|");
+        const areaC=(AREA_COLORS[p.area]||"#444|#f8fafc").split("|");
+        const statC=(STATUS_COLORS[p.estado]||"#444|#f8fafc").split("|");
+        const isApproved=p.isApproved;
+        const hasFb=!!p.feedback;
+        return `<div class="pub-card ${isApproved?"approved":""}">
+          ${isApproved?`<div style="font-size:11px;font-weight:700;color:#059669;margin-bottom:8px">✅ COPY APROBADO — no modificar</div>`:""}
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+              <button class="approve-btn ${p.isApproved?"on":""}" onclick="toggleApprove(${realIdx})" title="${p.isApproved?"Desaprobar":"Aprobar"}">${p.isApproved?"✅":"○"}</button>
+              <span class="badge" style="color:${pilarC[0]};background:${pilarC[1]};border-color:${pilarC[0]}33">${p.pilar}</span>
+              <span class="badge" style="color:${areaC[0]};background:${areaC[1]};border-color:${areaC[0]}33">${p.area}</span>
+              <span class="badge" style="color:${statC[0]};background:${statC[1]};border-color:${statC[0]}33">${p.estado}</span>
+              ${p.programado?`<span class="badge" style="color:#15803d;background:#f0fdf4;border-color:#bbf7d0">✓ Programado</span>`:""}
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0">
+              <button onclick="openPubModal(${realIdx})" style="background:none;border:none;cursor:pointer;font-size:15px">✏️</button>
+              <button onclick="deletePub(${realIdx})" style="background:none;border:none;cursor:pointer;font-size:15px">🗑️</button>
+            </div>
+          </div>
+          ${p.titulo?`<p style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px">${p.titulo}</p>`:""}
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px">${p.fecha||"Sin fecha"}</p>
+          <p style="font-size:13px;color:#374151;line-height:1.6;white-space:pre-line">${(p.copy||"").length>220?(p.copy||"").slice(0,220)+"…":p.copy}</p>
+          <div style="font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+            <span>${(p.copy||"").length} car.</span>
+            ${p.multimedia?`<span>🎨 ${p.multimedia}</span>`:""}
+            ${p.url?`<a href="${p.url}" target="_blank" style="color:#2563eb">🔗 URL</a>`:""}
+          </div>
+          ${!isApproved?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">💬 NOTA INTERNA</div>
+            ${editingFeedbackIdx===realIdx
+              ?`<div>
+                  <textarea id="fb-ta-${realIdx}" rows="3" style="width:100%;border:1.5px solid #F59E0B;border-radius:8px;padding:8px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB">${p.feedback||""}</textarea>
+                  <div style="display:flex;gap:6px;margin-top:6px">
+                    <button onclick="saveFeedback(${realIdx})" style="background:#F59E0B;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Guardar nota</button>
+                    <button onclick="cancelFeedback()" style="background:#f1f5f9;color:#444;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit">Cancelar</button>
+                  </div>
+                </div>`
+              :hasFb
+                ?`<div>
+                    <div class="fb-note" onclick="editingFeedbackIdx=${realIdx};renderBateria()">${p.feedback}</div>
+                    <div class="fb-meta">✍️ ${p.feedbackAuthor||""} · ${p.feedbackDate||""}</div>
+                    <button class="btn-rewrite-pub" id="rewrite-pub-${realIdx}" onclick="rewriteSinglePub(${realIdx})">↺ Rehacer con feedback</button>
+                  </div>`
+                :`<div class="fb-empty" onclick="editingFeedbackIdx=${realIdx};renderBateria()">+ Añadir nota interna</div>`
+            }
+          </div>`:""}
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
+function toggleApprove(i){
+  publications[i].isApproved=!publications[i].isApproved;
+  if(publications[i].isApproved)publications[i].estado="Aprobado";
+  persistBatteryToHistory();renderBateria();
+}
+function setValoration(val){generalFeedback.valoration=generalFeedback.valoration===val?"":val;renderBateria();}
+function deletePub(i){publications.splice(i,1);editingFeedbackIdx=null;renderBateria();}
+function saveFeedback(i){
+  const ta=document.getElementById(`fb-ta-${i}`);if(!ta)return;
+  publications[i].feedback=ta.value;
+  publications[i].feedbackAuthor=currentUser.name;
+  publications[i].feedbackDate=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+  editingFeedbackIdx=null;persistBatteryToHistory();renderBateria();
+}
+function cancelFeedback(){editingFeedbackIdx=null;renderBateria();}
+
+async function rewriteSinglePub(i){
+  const pub=publications[i];if(!pub.feedback)return;
+  const btn=document.getElementById(`rewrite-pub-${i}`);
+  if(btn){btn.disabled=true;btn.textContent="⟳ Rehaciendo…";}
+  const prompt=`Reescribe SOLO este post de LinkedIn de IBSA Iberia con el feedback indicado.
+Post original: ${pub.copy}
+Pilar: ${pub.pilar} | Área: ${pub.area} | Fecha: ${pub.fecha}
+Feedback: ${pub.feedback}
+Mantén mismo pilar, área y fecha. Responde ÚNICAMENTE con JSON: {"copy":"..."}`;
+  try{
+    const res=await fetch("https://cicero-hub-backend.onrender.com/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:SYSTEM_PROMPT,messages:[{role:"user",content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    publications[i].copy=parsed.copy;
+    persistBatteryToHistory();editingFeedbackIdx=null;renderBateria();
+  }catch(e){if(btn){btn.disabled=false;btn.textContent="↺ Rehacer con feedback";}}
+}
+
+async function regenWithGeneralFeedback(){
+  if(!generalFeedback.text&&!generalFeedback.valoration)return;
+  const instructions=`${generalFeedback.valoration?"Valoración: "+generalFeedback.valoration+". ":""}${generalFeedback.text}`;
+  const prevFb=JSON.parse(JSON.stringify(generalFeedback));
+  await generateBattery(instructions);
+  generalFeedback=prevFb;generalFeedback.editingText=false;
+}
+
+// ── Generate battery ──────────────────────────
+async function generateBattery(extraInstructions=""){
+  if(generating)return;
+  generating=true;
+  const btn=document.querySelector('[onclick="generateBattery()"]');
+  if(btn){btn.disabled=true;btn.innerHTML="⏳ Generando batería…";}
+  const textParts=notes.map((n,i)=>{
+    const tl=NOTE_TYPES.find(t=>t.value===n.tipo)?.label||n.tipo;
+    const docs=(n.archivos||[]).filter(f=>f.kind==="docx"||f.kind==="text").map(f=>`[Archivo: ${f.name}]\n${f.text}`).join("\n");
+    return `--- APUNTE ${i+1}: ${tl}${n.titulo?` | ${n.titulo}`:""}${n.fecha?` | ${n.fecha}`:""}${n.area?` | ${n.area}`:""}---\n${n.contenido}${docs?"\n"+docs:""}`;
+  }).join("\n\n");
+  
+  // 🌐 BÚSQUEDA WEB AUTOMÁTICA
+  let fuentesContext='';
+  const primerApunte=notes[0];
+  if(primerApunte&&primerApunte.contenido){
+    const tema=primerApunte.titulo||primerApunte.contenido.substring(0,100);
+    const busqueda=await buscarURLsRelevantes(tema,'IBSA Iberia');
+    if(busqueda){
+      fuentesContext=formatearFuentesParaPrompt(busqueda.fuentes);
+    }
+  }
+  
+  // Preserve approved posts
+  const approvedPosts=publications.filter(p=>p.isApproved);
+  const approvedInfo=approvedPosts.length?`\n\nPOSTS YA APROBADOS (NO modificar, incluirlos tal cual en la batería):\n${approvedPosts.map((p,i)=>`[POST APROBADO ${i+1}] Fecha: ${p.fecha} | ${p.titulo||""}\n${p.copy}`).join("\n---\n")}`:"";
+  const calInfo=calendarImage?"\n\n[Se adjunta imagen del calendario del mes para respetar la distribución.]":"";
+  const prompt=`Mes: ${mes}\nBRIEFING:\n${textParts}${approvedInfo}${calInfo}${fuentesContext}\n${extraInstructions?"FEEDBACK DEL EQUIPO (aplica estrictamente): "+extraInstructions:""}\nGenera la batería completa para IBSA Iberia.`;
+  // Build message with optional calendar image
+  let msgContent;
+  const mediaFiles=notes.flatMap(n=>(n.archivos||[]).filter(f=>f.kind==="image"||f.kind==="pdf"));
+  const contentParts=[];
+  if(calendarImage){const b64=calendarImage.split(",")[1];const mt=calendarImage.split(";")[0].split(":")[1];contentParts.push({type:"image",source:{type:"base64",media_type:mt,data:b64}});}
+  mediaFiles.forEach(f=>{if(f.kind==="image")contentParts.push({type:"image",source:{type:"base64",media_type:f.mediaType,data:f.b64}});else contentParts.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:f.b64}});});
+  contentParts.push({type:"text",text:prompt});
+  msgContent=contentParts.length===1?prompt:contentParts;
+  try{
+    const res=await fetch("https://cicero-hub-backend.onrender.com/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:8000,system:SYSTEM_PROMPT,messages:[{role:"user",content:msgContent}]})});
+    if(!res.ok){const e=await res.text();throw new Error("API "+res.status+": "+e);}
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content?.map(b=>b.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    // Merge: keep approved posts, add new ones
+    const newPubs=parsed.map(p=>({...p,feedback:"",feedbackAuthor:"",feedbackDate:"",isApproved:false}));
+    publications=[...approvedPosts,...newPubs].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
+    saveBatteryHistory();switchTab("bateria");
+  }catch(e){alert("Error al generar: "+e.message);console.error(e);}
+  generating=false;
+  if(btn){btn.disabled=false;btn.innerHTML="🚀 Regenerar batería";}
+}
+
+function persistBatteryToHistory(){
+  if(!batteryHistory.length)return;
+  batteryHistory[0].publications=JSON.parse(JSON.stringify(publications));
+  localStorage.setItem(HIST_KEY,JSON.stringify(batteryHistory));
+}
+function saveBatteryHistory(label=""){
+  const entry={mes,pubs:publications.length,savedAt:new Date().toLocaleDateString("es-ES"),label,publications:JSON.parse(JSON.stringify(publications))};
+  batteryHistory=[entry,...batteryHistory].slice(0,20);
+  localStorage.setItem(HIST_KEY,JSON.stringify(batteryHistory));
+  updateCounts();
+}
+
+function addNewPub(){
+  publications.push({titulo:"",pilar:"Calidad",area:"General",fecha:new Date().toISOString().split("T")[0],copy:"",url:"",multimedia:"",programado:false,urlLinkedin:"",estado:"Borrador",feedback:"",feedbackAuthor:"",feedbackDate:"",isApproved:false,refNote:""});
+  openPubModal(publications.length-1);
+}
+
+// ── Pub modal ─────────────────────────────────
+function openPubModal(i){
+  editingPubIdx=i;const p=publications[i];
+  document.getElementById("pm-pilar").value=p.pilar||"Calidad";
+  document.getElementById("pm-area").value=p.area||"General";
+  document.getElementById("pm-fecha").value=p.fecha||"";
+  document.getElementById("pm-estado").value=p.estado||"Borrador";
+  document.getElementById("pm-titulo").value=p.titulo||"";
+  document.getElementById("pm-copy").value=p.copy||"";
+  document.getElementById("pm-len").textContent=(p.copy||"").length+" caracteres";
+  document.getElementById("pm-url").value=p.url||"";
+  document.getElementById("pm-multimedia").value=p.multimedia||"";
+  document.getElementById("pm-programado").checked=!!p.programado;
+  document.getElementById("pm-urlLinkedin").value=p.urlLinkedin||"";
+  // Populate ref note select
+  const sel=document.getElementById("pm-ref-note");
+  sel.innerHTML=`<option value="">— Sin referencia —</option>`+notes.map((n,j)=>`<option value="${j}" ${p.refNote==j?"selected":""}>${NOTE_TYPES.find(t=>t.value===n.tipo)?.label.split(" ")[0]||""} ${n.titulo||"Apunte "+(j+1)}</option>`).join("");
+  document.getElementById("pub-modal").style.display="flex";
+  const ta=document.getElementById("pm-copy");
+  ta.oninput=()=>document.getElementById("pm-len").textContent=ta.value.length+" caracteres";
+}
+function closePubModal(){document.getElementById("pub-modal").style.display="none";}
+function savePubModal(){
+  const i=editingPubIdx;if(i===null)return;
+  publications[i]={...publications[i],
+    titulo:document.getElementById("pm-titulo").value,
+    pilar:document.getElementById("pm-pilar").value,
+    area:document.getElementById("pm-area").value,
+    fecha:document.getElementById("pm-fecha").value,
+    estado:document.getElementById("pm-estado").value,
+    copy:document.getElementById("pm-copy").value,
+    url:document.getElementById("pm-url").value,
+    multimedia:document.getElementById("pm-multimedia").value,
+    programado:document.getElementById("pm-programado").checked,
+    urlLinkedin:document.getElementById("pm-urlLinkedin").value,
+    refNote:document.getElementById("pm-ref-note").value,
+  };
+  closePubModal();persistBatteryToHistory();renderBateria();
+}
+
+// ── Approved modal ────────────────────────────
+function openApprovedModal(idx=null){
+  editingApprovedIdx=idx;
+  const a=idx!==null?approvedCopies[idx]:{pilar:"Calidad",area:"General",fecha:"",titulo:"",copy:"",prompt:"",multimedia:""};
+  document.getElementById("approved-modal-title").textContent=idx!==null?"Editar copy aprobado":"Nuevo copy aprobado";
+  document.getElementById("am-pilar").value=a.pilar||"Calidad";
+  document.getElementById("am-area").value=a.area||"General";
+  document.getElementById("am-fecha").value=a.fecha||"";
+  document.getElementById("am-titulo").value=a.titulo||"";
+  document.getElementById("am-copy").value=a.copy||"";
+  document.getElementById("am-prompt").value=a.prompt||"";
+  document.getElementById("am-multimedia").value=a.multimedia||"";
+  document.getElementById("approved-modal").style.display="flex";
+}
+function closeApprovedModal(){document.getElementById("approved-modal").style.display="none";}
+function saveApprovedModal(){
+  const entry={pilar:document.getElementById("am-pilar").value,area:document.getElementById("am-area").value,fecha:document.getElementById("am-fecha").value,titulo:document.getElementById("am-titulo").value,copy:document.getElementById("am-copy").value,prompt:document.getElementById("am-prompt").value,multimedia:document.getElementById("am-multimedia").value};
+  if(editingApprovedIdx!==null)approvedCopies[editingApprovedIdx]=entry;else approvedCopies.push(entry);
+  localStorage.setItem(APPROVED_KEY,JSON.stringify(approvedCopies));
+  closeApprovedModal();renderAprobados();updateCounts();
+}
+
+// ── COPY ESPECIAL ─────────────────────────────
+let spFiles=[];
+function renderEspecial(){
+  const pane=document.getElementById("pane-especial");
+  pane.innerHTML=`
+    <div class="special-section">
+      <div style="font-weight:800;font-size:15px;color:var(--navy);margin-bottom:16px">⭐ Copy especial · LinkedIn</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Genera un post individual con briefing libre. Puedes añadirlo a la batería.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div>
+          <label class="lbl">TIPO</label>
+          <select id="sp-tipo" style="width:100%" onchange="renderEspecialHint()">
+            <option value="evento">🗓️ Evento / Congreso</option>
+            <option value="agenda">📆 Agenda corporativa</option>
+            <option value="dia_mundial">🌍 Día Mundial</option>
+            <option value="lanzamiento">🚀 Lanzamiento</option>
+            <option value="persona">👤 Persona / Equipo</option>
+            <option value="fundacion">🔬 IBSA Foundation</option>
+            <option value="otro">✏️ Libre</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">ÁREA</label>
+          <select id="sp-area" style="width:100%">
+            <option>General</option><option>Global</option><option>Medicina Reproductiva</option><option>Osteoarticular</option><option>Dermoestética</option><option>IBSA Foundation</option>
+          </select>
+        </div>
+      </div>
+      <div id="sp-agenda-hint" style="display:none;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:10px 14px;font-size:12px;color:#7c3aed;margin-bottom:12px">📆 Modo agenda activo: se usará el prompt específico para anuncios de agenda corporativa.</div>
+      <div style="margin-bottom:14px">
+        <label class="lbl">BRIEFING</label>
+        <textarea id="sp-briefing" rows="4" placeholder="Describe el contenido, incluye datos, URL, tono deseado…" style="width:100%;resize:vertical;line-height:1.5"></textarea>
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="lbl">ARCHIVOS (opcional)</label>
+        <div class="dropzone" onclick="document.getElementById('sp-file').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#3b82f6'" ondragleave="this.style.borderColor=''"
+          ondrop="handleSpDrop(event)">📎 PDF, Word, imágenes</div>
+        <input type="file" id="sp-file" multiple accept=".pdf,.docx,.txt,image/*" style="display:none" onchange="handleSpFiles(this.files)"/>
+        <div id="sp-files-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button onclick="generateSpecial()" id="btn-special" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:10px;padding:11px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">✦ Generar copy</button>
+        <div id="sp-err" style="color:#B42318;font-size:13px"></div>
+      </div>
+      <div id="sp-result" style="margin-top:18px"></div>
+    </div>`;
+  spFiles=[];
+}
+function renderEspecialHint(){
+  const tipo=document.getElementById("sp-tipo")?.value;
+  const hint=document.getElementById("sp-agenda-hint");
+  if(hint)hint.style.display=tipo==="agenda"?"block":"none";
+}
+async function handleSpFiles(fl){const p=await processFiles(fl);spFiles=[...spFiles,...p];renderSpFiles();}
+async function handleSpDrop(e){e.preventDefault();e.currentTarget.style.borderColor="";await handleSpFiles(e.dataTransfer.files);}
+function renderSpFiles(){
+  const el=document.getElementById("sp-files-list");if(!el)return;
+  el.innerHTML=spFiles.map((f,i)=>`<span class="badge" style="color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe">${f.kind==="image"?"🖼️":f.kind==="pdf"?"📄":"📝"} ${f.name}<button onclick="spFiles.splice(${i},1);renderSpFiles()" style="background:none;border:none;cursor:pointer;color:#93c5fd;font-size:13px;margin-left:2px">&times;</button></span>`).join("");
+}
+
+async function generateSpecial(){
+  const briefing=document.getElementById("sp-briefing")?.value?.trim();
+  if(!briefing){document.getElementById("sp-err").textContent="Escribe el briefing.";return;}
+  document.getElementById("sp-err").textContent="";
+  const btn=document.getElementById("btn-special");btn.disabled=true;btn.textContent="⟳ Generando…";
+  const tipo=document.getElementById("sp-tipo").value;
+  const area=document.getElementById("sp-area").value;
+  const isAgenda=tipo==="agenda";
+  const sys=isAgenda?AGENDA_PROMPT:SYSTEM_PROMPT;
+  const textDocs=spFiles.filter(f=>f.kind==="docx"||f.kind==="text").map(f=>`[${f.name}]\n${f.text}`).join("\n");
+  const promptText=`Tipo: ${tipo} | Área: ${area} | Mes: ${mes}\nBriefing: ${briefing}\n${textDocs}`;
+  const contentParts=[];
+  spFiles.filter(f=>f.kind==="image"||f.kind==="pdf").forEach(f=>{
+    if(f.kind==="image")contentParts.push({type:"image",source:{type:"base64",media_type:f.mediaType,data:f.b64}});
+    else contentParts.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:f.b64}});
+  });
+  contentParts.push({type:"text",text:promptText+"Responde ÚNICAMENTE con JSON: {\"titulo\":\"...\",\"pilar\":\"...\",\"area\":\"...\",\"fecha\":\"YYYY-MM-DD\",\"copy\":\"...\",\"multimedia\":\"descripción para Canva o vacío\"}"});
+  const msgContent=contentParts.length===1?promptText+"Responde ÚNICAMENTE con JSON: {\"titulo\":\"...\",\"pilar\":\"...\",\"area\":\"...\",\"fecha\":\"YYYY-MM-DD\",\"copy\":\"...\",\"multimedia\":\"descripción para Canva o vacío\"}":contentParts;
+  try{
+    const res=await fetch("https://cicero-hub-backend.onrender.com/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,system:sys,messages:[{role:"user",content:msgContent}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    const result=document.getElementById("sp-result");
+    result.innerHTML=`<div style="background:white;border:1px solid var(--border);border-radius:14px;padding:18px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <span style="font-weight:700;font-size:14px;color:var(--navy)">${parsed.titulo||""}</span>
+          <span style="font-size:12px;color:var(--muted);margin-left:8px">${parsed.pilar} · ${parsed.area} · ${parsed.fecha||""}</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="copySpText()" style="background:#EFF6FF;color:#1d4ed8;border:1px solid #BFDBFE;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar</button>
+          <button onclick="addSpecialToBattery()" style="background:#059669;color:white;border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">+ Añadir a batería</button>
+        </div>
+      </div>
+      <p id="sp-copy-text" style="font-size:14px;line-height:1.7;color:#344054;white-space:pre-wrap;border:1px solid var(--border);border-radius:8px;padding:12px">${parsed.copy}</p>
+      ${parsed.multimedia?`<p style="font-size:12px;color:#5A67D8;margin-top:8px">🎨 ${parsed.multimedia}</p>`:""}
+    </div>`;
+    window._spParsed=parsed;
+  }catch(e){document.getElementById("sp-err").textContent="Error: "+e.message;console.error(e);}
+  btn.disabled=false;btn.textContent="✦ Generar copy";
+}
+function editSpFeedback(){window._spFeedback.editing=true;renderSpResult(window._spParsed);}
+function cancelSpFeedback(){window._spFeedback.editing=false;renderSpResult(window._spParsed);}
+function saveSpFeedback(){
+  const ta=document.getElementById("sp-fb-ta");
+  if(ta)window._spFeedback.text=ta.value;
+  window._spFeedback.editing=false;renderSpResult(window._spParsed);
+}
+
+async function regenSpecial(){
+  const btn=document.getElementById("sp-regen-btn");if(btn){btn.disabled=true;btn.textContent="⟳ Rehaciendo…";}
+  const fb=window._spFeedback?.text||"";
+  const prevCopy=document.getElementById("sp-copy-text")?.innerText||window._spParsed?.copy||"";
+  const isAgenda=window._spTipo==="agenda";
+  const sys=isAgenda?AGENDA_PROMPT:SYSTEM_PROMPT;
+  const promptText=`Tipo: ${window._spTipo} | Área: ${window._spArea} | Mes: ${mes}\nBriefing original: ${window._spBriefing}\nCopy anterior:\n${prevCopy}\nFEEDBACK (aplica estrictamente): ${fb}\nRespóndeme ÚNICAMENTE con JSON: {"titulo":"...","pilar":"...","area":"...","fecha":"YYYY-MM-DD","copy":"...","multimedia":"descripción para Canva o vacío"}`;
+  try{
+    const res=await fetch("https://cicero-hub-backend.onrender.com/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,system:sys,messages:[{role:"user",content:promptText}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    window._spParsed=parsed;window._spFeedback.editing=false;
+    renderSpResult(parsed);
+  }catch(e){if(btn){btn.disabled=false;btn.textContent="↺ Rehacer con feedback";}}
+}
+
+function copySpText(){
+  const el=document.getElementById("sp-copy-text");if(!el)return;
+  navigator.clipboard.writeText(el.innerText).then(()=>{alert("Copy copiado al portapapeles.");});
+}
+
+function downloadSpExcel(){
+  const el=document.getElementById("sp-copy-text");if(!el)return;
+  const copy=el.innerText;const p=window._spParsed||{};
+  try{
+    if(!window.XLSX){
+      const csv=`"Título","Pilar","Área","Fecha","Copy","Multimedia"\n"${(p.titulo||"").replace(/"/g,'""')}","${p.pilar||""}","${p.area||""}","${p.fecha||""}","${copy.replace(/"/g,'""')}","${(p.multimedia||"").replace(/"/g,'""')}"`;
+      const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`IBSA_CopyEspecial.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);return;
+    }
+    const wb=window.XLSX.utils.book_new();
+    const ws=window.XLSX.utils.aoa_to_sheet([["Título","Pilar","Área","Fecha","Copy","Multimedia","Caracteres"],[p.titulo||"",p.pilar||"",p.area||"",p.fecha||"",copy,p.multimedia||"",copy.length]]);
+    ws["!cols"]=[{wch:24},{wch:14},{wch:18},{wch:12},{wch:80},{wch:30},{wch:8}];
+    window.XLSX.utils.book_append_sheet(wb,ws,"Copy especial");
+    window.XLSX.writeFile(wb,`IBSA_CopyEspecial_${mes}.xlsx`);
+  }catch(e){alert("Error al exportar: "+e.message);}
+}
+function addSpecialToBattery(){
+  if(!window._spParsed)return;
+  publications.unshift({...window._spParsed,feedback:"",feedbackAuthor:"",feedbackDate:"",isApproved:false,estado:"Borrador"});
+  saveBatteryHistory("Desde copy especial");
+  switchTab("bateria");
+}
+
+// ── HISTORIAL ─────────────────────────────────
+function renderHistorial(){
+  updateCounts();
+  const pane=document.getElementById("pane-historial");
+  if(!batteryHistory.length){
+    pane.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">🗂️</div><p style="font-size:14px">Aún no hay baterías guardadas.</p></div>`;
+    return;
+  }
+  pane.innerHTML=`
+    <div style="margin-bottom:16px"><h2 style="font-size:18px;font-weight:800;color:var(--navy)">Historial de baterías</h2><p style="font-size:13px;color:var(--muted);margin-top:3px">Máximo 20 versiones guardadas.</p></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${batteryHistory.map((h,i)=>`<div style="background:white;border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;box-shadow:0 1px 6px rgba(0,0,0,.05)">
+        <div>
+          <p style="font-weight:700;font-size:14px;color:var(--navy)">${h.mes} <span style="font-size:12px;color:var(--muted);font-weight:400">· ${h.pubs} posts · ${h.savedAt}</span></p>
+          ${h.label?`<p style="font-size:12px;color:#2563eb;margin-top:2px">${h.label}</p>`:""}
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="restoreHistory(${i})" class="btn-primary" style="font-size:12px;padding:7px 14px">↩ Recuperar</button>
+          <button onclick="deleteHistory(${i})" class="btn-danger">Eliminar</button>
+        </div>
+      </div>`).join("")}
+    </div>`;
+}
+function restoreHistory(i){publications=JSON.parse(JSON.stringify(batteryHistory[i].publications||[]));editingFeedbackIdx=null;switchTab("bateria");}
+function deleteHistory(i){batteryHistory.splice(i,1);localStorage.setItem(HIST_KEY,JSON.stringify(batteryHistory));renderHistorial();updateCounts();}
+
+// ── Note modal ────────────────────────────────
+function openNoteModal(idx=null){
+  editingNoteIdx=idx;nmFiles=[];
+  const n=idx!==null?notes[idx]:{tipo:"evento",titulo:"",fecha:"",area:"",contenido:"",archivos:[]};
+  document.getElementById("note-modal-title").textContent=idx!==null?"Editar apunte":"Nuevo apunte";
+  document.getElementById("nm-tipo").value=n.tipo||"evento";
+  document.getElementById("nm-area").value=n.area||"";
+  document.getElementById("nm-titulo").value=n.titulo||"";
+  document.getElementById("nm-fecha").value=n.fecha||"";
+  document.getElementById("nm-contenido").value=n.contenido||"";
+  nmFiles=JSON.parse(JSON.stringify(n.archivos||[]));
+  renderNmFiles();
+  document.getElementById("note-modal").style.display="flex";
+}
+function closeNoteModal(){document.getElementById("note-modal").style.display="none";}
+function renderNmFiles(){
+  document.getElementById("nm-files-list").innerHTML=nmFiles.map((f,i)=>`<span class="badge" style="color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe">${f.kind==="image"?"🖼️":f.kind==="pdf"?"📄":"📝"} ${f.name}<button onclick="nmFiles.splice(${i},1);renderNmFiles()" style="background:none;border:none;cursor:pointer;color:#93c5fd;font-size:13px;margin-left:2px">&times;</button></span>`).join("");
+}
+async function handleNoteFiles(fl){const p=await processFiles(fl);nmFiles=[...nmFiles,...p];renderNmFiles();}
+async function handleNoteDrop(e){e.preventDefault();e.currentTarget.style.borderColor="";await handleNoteFiles(e.dataTransfer.files);}
+function saveNoteModal(){
+  const note={tipo:document.getElementById("nm-tipo").value,area:document.getElementById("nm-area").value,titulo:document.getElementById("nm-titulo").value,fecha:document.getElementById("nm-fecha").value,contenido:document.getElementById("nm-contenido").value,archivos:nmFiles};
+  if(editingNoteIdx!==null)notes[editingNoteIdx]=note;else notes.push(note);
+  localStorage.setItem(BRIEF_KEY,JSON.stringify(notes));
+  closeNoteModal();renderBriefing();updateCounts();
+}
+
+// ── File processing ───────────────────────────
+async function processFiles(fileList){
+  const out=[];
+  for(const f of Array.from(fileList)){
+    const name=f.name.toLowerCase();
+    if(f.type.startsWith("image/")){const b64=await toB64(f);out.push({name:f.name,kind:"image",mediaType:f.type,b64});}
+    else if(f.type==="application/pdf"||name.endsWith(".pdf")){const b64=await toB64(f);out.push({name:f.name,kind:"pdf",b64});}
+    else if(name.endsWith(".docx")||f.type.includes("wordprocessingml")){const buf=await toArrayBuffer(f);if(window.mammoth){const{value}=await mammoth.extractRawText({arrayBuffer:buf});out.push({name:f.name,kind:"docx",text:value});}}
+    else if(f.type.startsWith("text/")||name.endsWith(".txt")){const text=await f.text();out.push({name:f.name,kind:"text",text});}
+  }
+  return out;
+}
+function toB64(f){return new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result.split(",")[1]);rd.onerror=j;rd.readAsDataURL(f);});}
+function toArrayBuffer(f){return new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=j;rd.readAsArrayBuffer(f);});}
+
+// ── Export ────────────────────────────────────
+function exportCSV(){
+  if(!publications.length){alert("No hay publicaciones.");return;}
+  try{
+    if(!window.XLSX){
+      // Fallback CSV
+      const headers=["Aprobado","Título","Pilar","Área","Fecha","Copy","Caracteres","URL","Multimedia","Programado","URL LinkedIn","Estado","Feedback","Autor"];
+      const rows=publications.map(p=>[p.isApproved?"Sí":"No",p.titulo||"",p.pilar,p.area,p.fecha,(p.copy||""),(p.copy||"").length,p.url||"",p.multimedia||"",p.programado?"OK":"",p.urlLinkedin||"",p.estado,p.feedback||"",p.feedbackAuthor||""]);
+      const csv=[headers,...rows].map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+      const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`IBSA_Iberia_${mes}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);
+      return;
+    }
+    const wb=window.XLSX.utils.book_new();
+    const headers=["Aprobado","Título","Pilar","Área","Fecha","Copy","Caracteres","URL","Multimedia","Programado","URL LinkedIn","Estado","Feedback","Autor feedback"];
+    const rows=publications.map(p=>[p.isApproved?"Sí":"No",p.titulo||"",p.pilar,p.area,p.fecha,p.copy||"",(p.copy||"").length,p.url||"",p.multimedia||"",p.programado?"OK":"",p.urlLinkedin||"",p.estado,p.feedback||"",p.feedbackAuthor||""]);
+    const ws=window.XLSX.utils.aoa_to_sheet([headers,...rows]);
+    const colW=[8,20,14,18,12,60,8,30,30,10,30,12,40,14];
+    ws["!cols"]=colW.map(w=>({wch:w}));
+    window.XLSX.utils.book_append_sheet(wb,ws,"Batería IBSA Iberia");
+    window.XLSX.writeFile(wb,`IBSA_Iberia_${mes}.xlsx`);
+  }catch(e){alert("Error al exportar: "+e.message);console.error(e);}
+}
+
+// ── Init ──────────────────────────────────────
+updateCounts();
+renderCalendario();
+</script>
+</body>
+</html>

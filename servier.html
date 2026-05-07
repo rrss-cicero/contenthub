@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Servier España · Content Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{--navy:#002D55;--navy2:#004A8F;--accent:#3b82f6;--border:#E4E7EC;--gray:#F0F4F8;--text:#1a1a2e;--muted:#9AA0AC}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+  header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(0,45,85,.4);position:sticky;top:0;z-index:100}
+  .h-left{display:flex;align-items:center;gap:12px}
+  .btn-back{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.9);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:flex;align-items:center;gap:5px}
+  .btn-back:hover{background:rgba(255,255,255,.22)}
+  .h-brand{color:white;font-size:16px;font-weight:800}
+  .h-pill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+  .h-right{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.7);font-size:13px}
+  .user-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:white;border:1.5px solid rgba(255,255,255,.3)}
+  .main{max-width:1100px;margin:0 auto;padding:28px 20px}
+  .card{background:white;border-radius:16px;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:20px}
+  .card-title{font-weight:700;font-size:15px;color:var(--text);margin-bottom:18px}
+  label.lbl{font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:6px;letter-spacing:.5px}
+  select,input[type=number],textarea{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;color:var(--text);outline:none;background:#FAFBFC;font-family:inherit;box-sizing:border-box}
+  select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+  .ch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+  .ch-card{background:white;border-radius:14px;padding:18px 20px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:2px solid transparent}
+  .ch-card.active{border-color:var(--accent)}
+  .ch-card-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .ch-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0;color:white}
+  .ch-name{font-weight:700;font-size:14px}
+  .ch-freq{font-size:12px;color:#888}
+  .ch-posts{font-size:12px;color:#aaa;margin-bottom:12px}
+  .btn-gen{width:100%;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-gen:disabled{background:#ccc!important;color:#888!important;cursor:not-allowed}
+  .gen-all-wrap{text-align:center;margin-bottom:24px}
+  .btn-all{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:12px;padding:14px 40px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,45,85,.3);font-family:inherit}
+  .btn-all:disabled{background:#9BB5CC!important;box-shadow:none;cursor:not-allowed}
+  .save-msg{margin-top:10px;color:#059669;font-size:13px;font-weight:600}
+  .err-msg{margin-top:10px;color:#B42318;font-size:13px}
+  .btn-history{background:rgba(0,45,85,.08);border:1px solid rgba(0,45,85,.15);color:var(--navy);border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px}
+  .history-panel{background:#F8F9FB;border-radius:16px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px}
+  .tab-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+  .tab-btn{border:2px solid var(--border);border-radius:10px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:white;color:#444}
+  .action-row{display:flex;gap:8px;margin-left:auto}
+  .abtn{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+  .strategy{background:linear-gradient(135deg,#EFF6FF,#F0FDF4);border:1px solid #BFDBFE;border-radius:14px;padding:18px 22px;margin-bottom:16px}
+  .strategy-title{font-weight:700;font-size:12px;color:#1e40af;margin-bottom:8px;letter-spacing:.5px}
+  .strategy p{color:#374151;font-size:14px;line-height:1.7}
+  .ef-pill{background:white;border:1px solid #BFDBFE;border-radius:20px;padding:3px 12px;font-size:12px;color:#1e40af;font-weight:500}
+  .area-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .area-badge{border-radius:10px;padding:6px 14px;display:flex;align-items:center;gap:7px;border:1px solid}
+  .tbl-wrap{background:white;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,.06);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{padding:11px 13px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;border-bottom:2px solid #EAECF0;background:#F8F9FB;white-space:nowrap}
+  tbody tr{border-bottom:1px solid #F2F4F7}
+  tbody tr:nth-child(even){background:#FAFBFC}
+  td{padding:12px 13px;vertical-align:top;color:#344054}
+  .tbl-foot{padding:11px 18px;background:#F8F9FB;border-top:1px solid #F0F2F5;display:flex;gap:20px;font-size:12px;color:#667085;align-items:center}
+  .copy-cell{line-height:1.55;cursor:text;padding:4px 6px;border-radius:6px;transition:background .15s}
+  .copy-cell:hover{background:#F0F4F8}
+  .edit-area{width:100%;border:1.5px solid var(--navy2);border-radius:6px;padding:6px 8px;font-size:14px;font-family:inherit;resize:vertical;outline:none}
+  .feedback-cell{min-width:200px}
+  .feedback-note{font-size:12px;line-height:1.5;color:#374151;white-space:pre-wrap;padding:6px 8px;border-radius:6px;cursor:pointer;background:#FFFBEB;border:1px solid #FDE68A;margin-bottom:4px}
+  .feedback-note:hover{background:#FEF3C7}
+  .feedback-empty{font-size:12px;color:#bbb;font-style:italic;cursor:pointer;padding:4px 6px;border-radius:6px}
+  .feedback-empty:hover{background:#FFFBEB;color:#92400E}
+  .feedback-meta{font-size:10px;color:#aaa;margin-bottom:6px}
+  .btn-rewrite{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn-rewrite:disabled{opacity:.5;cursor:not-allowed}
+  .general-feedback{background:white;border-radius:14px;border:1.5px solid var(--border);padding:18px 20px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+  .general-feedback-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-bottom:12px;text-transform:uppercase}
+  .valoration-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .val-btn{border:2px solid var(--border);border-radius:20px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;background:white}
+  .val-btn.aprobado{border-color:#059669;background:#D1FAE5;color:#065F46}
+  .val-btn.revisar{border-color:#D97706;background:#FEF3C7;color:#92400E}
+  .val-btn.rechazar{border-color:#DC2626;background:#FEE2E2;color:#991B1B}
+  .btn-regen-feedback{background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:8px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px}
+  .btn-regen-feedback:disabled{opacity:.5;cursor:not-allowed}
+  .special-section{background:white;border-radius:16px;padding:24px 28px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-top:28px;border:2px solid #BFDBFE}
+  .special-title{font-weight:800;font-size:15px;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .ch-toggle-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .ch-toggle{border:2px solid var(--border);border-radius:10px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;background:white;color:#444;transition:.15s}
+  .ch-toggle.on{border-color:var(--navy);background:var(--navy);color:white}
+  .special-results{margin-top:18px;display:flex;flex-direction:column;gap:14px}
+  .special-result-card{background:#F8F9FB;border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .special-result-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .special-copy{font-size:14px;line-height:1.65;color:#344054;white-space:pre-wrap;padding:4px 0}
+  @media(max-width:640px){.ch-grid{grid-template-columns:1fr}header{padding:0 16px}.main{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-left">
+    <a href="index.html" class="btn-back">← Dashboard</a>
+    <div style="width:1px;height:24px;background:rgba(255,255,255,.2)"></div>
+    <div class="h-brand">💊 Servier España</div>
+    <span class="h-pill">Multicanal</span>
+  </div>
+  <div class="h-right">
+    <div class="user-avatar" id="user-avatar"></div>
+    <span id="user-name"></span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="card">
+    <div class="card-title">Configura el mes</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+      <div><label class="lbl">MES</label><select id="sel-month"></select></div>
+      <div><label class="lbl">AÑO</label><input type="number" id="inp-year" style="width:100px"/></div>
+    </div>
+    <div>
+      <label class="lbl">CONTEXTO ADICIONAL (opcional) — incluye URLs para usarlas como fuente</label>
+      <textarea id="inp-context" rows="2" placeholder="Ej: congreso de cardiología el día 15, https://servier.es/blog/articulo…" style="width:100%;resize:vertical;line-height:1.5"></textarea>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+        <input type="checkbox" id="enable-websearch" style="width:auto;cursor:pointer"/>
+        <label for="enable-websearch" style="font-size:13px;color:var(--muted);cursor:pointer;margin:0">🔍 Buscar información actualizada en internet (+$0.01 por uso)</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="ch-grid" id="ch-grid"></div>
+
+  <div class="gen-all-wrap">
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;align-items:center">
+      <button class="btn-all" id="btn-all" onclick="generateAll()">✦ Generar los 3 canales</button>
+      <button class="btn-history" onclick="toggleHistory()">🗂️ Historial <span id="hist-count" style="background:rgba(0,45,85,.15);border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700"></span></button>
+    </div>
+    <div id="save-msg" class="save-msg"></div>
+    <div id="err-msg" class="err-msg"></div>
+  </div>
+
+  <div id="history-panel" class="history-panel" style="display:none"></div>
+  <div id="results"></div>
+
+  <div class="special-section">
+    <div class="special-title">⭐ Copy especial</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div>
+        <label class="lbl">TIPO DE COPY</label>
+        <select id="sp-tipo" style="width:100%">
+          <option value="anuncio">📢 Anuncio / Noticia</option>
+          <option value="efemeride">📅 Efeméride</option>
+          <option value="congreso">🏛️ Congreso / Evento</option>
+          <option value="rsc">🌱 RSC / Responsabilidad</option>
+          <option value="cientifico">🔬 Contenido científico</option>
+          <option value="divulgacion">💡 Divulgación pacientes</option>
+          <option value="corporativo">🏢 Corporativo</option>
+          <option value="libre">✏️ Libre</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">ÁREA</label>
+        <select id="sp-area" style="width:100%">
+          <option value="cardiovascular">❤️ Cardiovascular</option>
+          <option value="oncologia">🎗️ Oncología</option>
+          <option value="venosa">🦵 Venosa</option>
+          <option value="corporativo">🏢 Corporativo</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label class="lbl">CANALES A GENERAR</label>
+      <div class="ch-toggle-row" id="sp-channels">
+        <button class="ch-toggle on" data-ch="x" onclick="toggleSpCh(this)">𝕏 X/Twitter</button>
+        <button class="ch-toggle on" data-ch="instagram" onclick="toggleSpCh(this)">📷 Instagram</button>
+        <button class="ch-toggle on" data-ch="linkedin" onclick="toggleSpCh(this)">in LinkedIn</button>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label class="lbl">BRIEFING DEL COPY</label>
+      <textarea id="sp-briefing" rows="4" placeholder="Describe qué quieres comunicar, incluye datos, URLs de fuente, tono deseado…" style="width:100%;resize:vertical;line-height:1.5"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="generateSpecial()" id="btn-special" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:10px;padding:11px 28px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">✦ Generar copies</button>
+      <div id="sp-err" style="color:#B42318;font-size:13px"></div>
+    </div>
+    <div class="special-results" id="sp-results"></div>
+  </div>
+</div>
+
+<script>
+// ── Auth ──────────────────────────────────────
+const USERS=[{id:"admin",pass:"admin2026",role:"admin",name:"Administrador"},{id:"editor",pass:"editor2026",role:"editor",name:"Copywriter"}];
+const PROXY_URL="https://cicero-hub-backend.onrender.com/api/claude";
+const SEARCH_API_URL="https://cicero-hub-backend.onrender.com/api/search";
+
+async function buscarURLsRelevantes(tema,area=''){
+  try{
+    const query=area?`${tema} ${area} noticias recientes`:`${tema} noticias recientes`;
+    console.log('🔍 Buscando URLs:',query);
+    const response=await fetch(SEARCH_API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:query,max_results:3})
+    });
+    if(!response.ok){console.warn('⚠️ Búsqueda fallida');return null;}
+    const data=await response.json();
+    if(data.results&&data.results.length>0){
+      console.log('✅ URLs encontradas:',data.results.length);
+      return{
+        resumen:data.answer||'',
+        urls:data.results.map(r=>r.url),
+        fuentes:data.results.map(r=>({
+          titulo:r.title,
+          url:r.url,
+          extracto:r.content?r.content.substring(0,150):''
+        }))
+      };
+    }
+    return null;
+  }catch(error){console.error('❌ Error en búsqueda:',error);return null;}
+}
+
+function formatearFuentesParaPrompt(fuentes){
+  if(!fuentes||fuentes.length===0)return'';
+  return`\n\nFUENTES ACTUALES (incluye URLs relevantes):\n${fuentes.map((f,i)=>`${i+1}. ${f.titulo}\n   ${f.url}\n   ${f.extracto}...`).join('\n\n')}`;
+}
+let currentUser=null;
+try{const s=JSON.parse(localStorage.getItem("ch_session")||"null");if(s&&Date.now()-s.ts<8*3600*1000)currentUser=USERS.find(u=>u.id===s.id);}catch(_){}
+if(!currentUser){window.location.href="index.html";}
+else{
+  document.getElementById("user-avatar").textContent=currentUser.name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  document.getElementById("user-name").textContent=currentUser.name;
+}
+
+// ── Constants ─────────────────────────────────
+const STORAGE_KEY="servier_history_servier";
+const MONTHS=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const CHANNELS=[
+  {id:"x",        label:"X (Twitter)",         icon:"𝕏",  bg:"#1a1a1a", freq:"2 posts/día · L-V", ppm:"~40 posts"},
+  {id:"instagram",label:"Instagram / Facebook", icon:"📷", bg:"linear-gradient(135deg,#E1306C,#F77737)", freq:"3 posts/semana", ppm:"~12 posts"},
+  {id:"linkedin", label:"LinkedIn",             icon:"in", bg:"#0077B5", freq:"4 posts/mes", ppm:"4 posts"},
+];
+const AREA_CONFIG={
+  cardiovascular:{label:"Cardiovascular",color:"#C0392B",bg:"#FEF2F2",emoji:"❤️"},
+  oncologia:     {label:"Oncología",     color:"#8E44AD",bg:"#F5F3FF",emoji:"🎗️"},
+  venosa:        {label:"Venosa",        color:"#2980B9",bg:"#EFF8FF",emoji:"🦵"},
+  corporativo:   {label:"Corporativo",   color:"#27AE60",bg:"#F0FDF4",emoji:"🏢"},
+};
+const lenColor=(n,ch)=>ch==="x"?(n>280?"#E63329":n>240?"#D97706":"#059669"):ch==="instagram"?(n>600?"#E63329":n>450?"#D97706":"#059669"):(n>900?"#E63329":n>700?"#D97706":"#059669");
+
+// ── State ─────────────────────────────────────
+let month=new Date().getMonth(), year=new Date().getFullYear();
+let channelData={x:null,instagram:null,linkedin:null};
+let loading={x:false,instagram:false,linkedin:false};
+let history=[], activeChannel="x", editingCopy=null, editingFeedback=null;
+let generalFeedback={x:{text:"",valoration:"",editingText:false},instagram:{text:"",valoration:"",editingText:false},linkedin:{text:"",valoration:"",editingText:false}};
+let spGenerating=false;
+
+const selMonth=document.getElementById("sel-month");
+MONTHS.forEach((m,i)=>{const o=document.createElement("option");o.value=i;o.textContent=m;selMonth.appendChild(o);});
+selMonth.value=String(month);
+selMonth.addEventListener("change",e=>{month=Number(e.target.value);});
+const inpYear=document.getElementById("inp-year");
+inpYear.value=String(year);
+inpYear.addEventListener("change",e=>{year=Number(e.target.value)||new Date().getFullYear();});
+try{history=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");}catch(_){history=[];}
+updateHistCount();
+renderChannelCards();
+
+// ── Prompts ───────────────────────────────────
+const RULES=`REGLAS OBLIGATORIAS:
+1. NUNCA "luchar contra el cáncer" → usar "abordaje", "investigación oncológica", "avances terapéuticos".
+2. NUNCA nombres de medicamentos → "soluciones terapéuticas", "innovación", "tratamientos".
+3. Primera persona del plural: "En Servier apostamos por…".
+4. HASHTAGS: máximo 2-3 por post. SOLO #ServierEspaña #WeAreServier #MovedByYou. Posts institucionales usan #WeAreServier o #MovedByYou. Posts temáticos usan #ServierEspaña + uno más. NUNCA hashtags de patología ni genéricos.
+5. Mencionar @Servier máximo 1-2 veces en todo el mes.
+6. Efemérides: SOLO las del mes solicitado, ninguna de meses anteriores o posteriores.
+7. Si el contexto adicional incluye URLs, úsalas como campo "fuente" en los posts relevantes.
+8. Idioma: español de España.`;
+
+const PROMPTS={
+  x:`Eres el social media manager de Servier España en X (Twitter).
+FRECUENCIA: 2 posts diarios L-V, calculando días laborables del mes indicado (excluye sábados, domingos y festivos nacionales españoles).
+DISTRIBUCIÓN equilibrada: cardiovascular ❤️, oncologia 🎗️, venosa 🦵, corporativo 🏢.
+TONO: Accesible, cálido. Frases cortas y directas. 0-2 emojis. Español de España.
+LONGITUD: 160-280 caracteres. MUY ESTRICTO, nunca superar 280.
+${RULES}
+Responde ÚNICAMENTE con JSON válido sin markdown:
+{"resumen":"...","efemerides":["solo del mes solicitado"],"posts":[{"dia":3,"area":"cardiovascular|oncologia|venosa|corporativo","efemeride":"","copy":"...","multimedia":"descripción breve para Canva o vacío","fuente":"URL o vacío","longitud":0}]}`,
+
+  instagram:`Eres el social media manager de Servier España en Instagram y Facebook.
+FRECUENCIA: exactamente 3 posts/semana en días laborables.
+DISTRIBUCIÓN equilibrada: cardiovascular, oncologia, venosa, corporativo.
+TONO: Visual, cercano, 2-4 emojis. CTA a guardar/comentar/reflexionar. Español de España.
+LONGITUD: 300-600 caracteres.
+FORMATO: indica "Feed" o "Reel" según corresponda.
+${RULES}
+Responde ÚNICAMENTE con JSON válido sin markdown:
+{"resumen":"...","efemerides":["solo del mes solicitado"],"posts":[{"dia":3,"area":"cardiovascular|oncologia|venosa|corporativo","efemeride":"","formato":"Feed|Reel","copy":"...","multimedia":"descripción breve para Canva","fuente":"URL o vacío","longitud":0}]}`,
+
+  linkedin:`Eres el social media manager de Servier España en LinkedIn.
+FRECUENCIA: 4 posts al mes, 1 por semana, preferiblemente martes o miércoles.
+DISTRIBUCIÓN: 1-2 corporativos/RSC, 1 científico, 1 divulgación pacientes.
+TONO: Profesional, riguroso pero humano. Sin jerga corporativa.
+LONGITUD: 500-900 caracteres.
+${RULES}
+Responde ÚNICAMENTE con JSON válido sin markdown:
+{"resumen":"...","efemerides":["solo del mes solicitado"],"posts":[{"dia":3,"area":"cardiovascular|oncologia|venosa|corporativo","efemeride":"","copy":"...","multimedia":"descripción breve para Canva","fuente":"URL o vacío","longitud":0}]}`
+};
+
+const SP_PROMPTS={
+  x:`Genera un post para X/Twitter de Servier España. LONGITUD: 160-280 caracteres MUY ESTRICTO. 0-2 emojis. ${RULES}`,
+  instagram:`Genera un post de Instagram/Facebook de Servier España. LONGITUD: 300-600 caracteres. 2-4 emojis. CTA. ${RULES}`,
+  linkedin:`Genera un post de LinkedIn de Servier España. LONGITUD: 500-900 caracteres. Tono profesional. ${RULES}`
+};
+
+// ── Extract JSON helper ───────────────────────
+function extractJSON(text){
+  text=text.trim();
+  // Remove markdown code blocks
+  text=text.replace(/```json\s*/gi,"").replace(/```\s*/g,"");
+  // Try to find JSON array or object
+  const arrayMatch=text.match(/\[[\s\S]*\]/);
+  if(arrayMatch)return arrayMatch[0];
+  const objMatch=text.match(/\{[\s\S]*\}/);
+  if(objMatch)return objMatch[0];
+  return text;
+}
+
+// ── API call ──────────────────────────────────
+async function callAPI(chId, extraInstructions=""){
+  const ch=CHANNELS.find(c=>c.id===chId);
+  const ctx=document.getElementById("inp-context").value;
+  const enableWebSearch=document.getElementById("enable-websearch").checked;
+  
+  // 🌐 BÚSQUEDA WEB AUTOMÁTICA
+  let fuentesContext='';
+  if(ctx){
+    const busqueda=await buscarURLsRelevantes(ctx,ch.label);
+    if(busqueda){
+      fuentesContext=formatearFuentesParaPrompt(busqueda.fuentes);
+    }
+  }
+  
+  const prompt=`Genera el plan completo de ${ch.label} para Servier España, mes de ${MONTHS[month]} ${year}.
+${ctx?"Contexto adicional: "+ctx:""}${fuentesContext}
+${extraInstructions?"INSTRUCCIONES DE FEEDBACK (aplícalas estrictamente): "+extraInstructions:""}
+El campo "dia" debe ser el número del día del mes (1-${new Date(year,month+1,0).getDate()}).`;
+  const res=await fetch(PROXY_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:chId==="x"?12000:5000,system:PROMPTS[chId],messages:[{role:"user",content:prompt}],enableWebSearch})
+  });
+  if(!res.ok){const e=await res.text();throw new Error("API "+res.status+": "+e);}
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message||"API error");
+  const text=data.content?.map(i=>i.text||"").join("")||"";
+  const clean=extractJSON(text);
+  const parsed=JSON.parse(clean);
+  parsed.posts=parsed.posts.map(p=>({...p,feedback:"",feedbackAuthor:"",feedbackDate:""}));
+  return parsed;
+}
+
+// ── Generate ──────────────────────────────────
+const loadMsgs=["Calculando días laborables…","Detectando efemérides sanitarias…","Distribuyendo posts por área…","Redactando copies al tono de Servier…","Asignando multimedia y fuentes…","Verificando frecuencia y equilibrio…"];
+
+async function generateSingle(chId){
+  editingCopy=null;editingFeedback=null;
+  document.getElementById("err-msg").textContent="";
+  loading[chId]=true;renderChannelCards();updateBtn(true);
+  let idx=0;const t=setInterval(()=>{idx=(idx+1)%loadMsgs.length;updateBtn(true,loadMsgs[idx]);},2200);
+  try{const parsed=await callAPI(chId);channelData[chId]=parsed;activeChannel=chId;await saveVersion();renderResults();}
+  catch(e){document.getElementById("err-msg").textContent=`Error: ${e.message}. Comprueba la consola.`;console.error(e);}
+  clearInterval(t);loading[chId]=false;renderChannelCards();updateBtn(false);
+}
+
+async function generateAll(){
+  editingCopy=null;editingFeedback=null;
+  document.getElementById("err-msg").textContent="";
+  for(const ch of CHANNELS){
+    loading[ch.id]=true;renderChannelCards();updateBtn(true);
+    let idx=0;const t=setInterval(()=>{idx=(idx+1)%loadMsgs.length;updateBtn(true,loadMsgs[idx]);},2200);
+    try{channelData[ch.id]=await callAPI(ch.id);}
+    catch(e){document.getElementById("err-msg").textContent=`Error en ${ch.label}: ${e.message}`;console.error(e);}
+    clearInterval(t);loading[ch.id]=false;renderChannelCards();
+  }
+  if(channelData.x||channelData.instagram||channelData.linkedin){await saveVersion();activeChannel=CHANNELS.find(c=>channelData[c.id])?.id||"x";renderResults();}
+  updateBtn(false);
+}
+
+function updateBtn(dis,msg=""){
+  const b=document.getElementById("btn-all");b.disabled=dis;
+  b.textContent=dis?"⟳ "+(msg||"Generando…"):`✦ Generar los 3 canales · ${MONTHS[month]} ${year}`;
+}
+
+async function rewriteSingleCopy(idx){
+  const post=channelData[activeChannel].posts[idx];if(!post.feedback)return;
+  const ch=CHANNELS.find(c=>c.id===activeChannel);
+  const btn=document.getElementById(`rewrite-btn-${idx}`);
+  if(btn){btn.disabled=true;btn.textContent="⟳ Rehaciendo…";}
+  const prompt=`Reescribe SOLO este post de ${ch.label} para Servier España teniendo en cuenta el feedback.
+Post original: ${post.copy}
+Área: ${post.area}
+Feedback del equipo: ${post.feedback}
+Mantén mismo día (${post.dia}), área (${post.area})${post.formato?" y formato ("+post.formato+")":""}.
+Responde ÚNICAMENTE con JSON: {"copy":"...","longitud":0}`;
+  try{
+    const res=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:PROMPTS[activeChannel],messages:[{role:"user",content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    channelData[activeChannel].posts[idx].copy=parsed.copy;
+    channelData[activeChannel].posts[idx].longitud=parsed.longitud||parsed.copy.length;
+    persistFeedback();renderResults();
+  }catch(e){if(btn){btn.disabled=false;btn.innerHTML="↺ Rehacer con feedback";}}
+}
+
+async function regenWithGeneralFeedback(chId){
+  const fb=generalFeedback[chId];if(!fb.text&&!fb.valoration)return;
+  const instructions=`${fb.valoration?"Valoración: "+fb.valoration+". ":""}${fb.text}`;
+  loading[chId]=true;renderChannelCards();updateBtn(true,"Regenerando con feedback…");
+  try{
+    const parsed=await callAPI(chId,instructions);
+    const prevFb=JSON.parse(JSON.stringify(generalFeedback[chId]));
+    channelData[chId]=parsed;generalFeedback[chId]=prevFb;
+    activeChannel=chId;await saveVersion();renderResults();
+  }catch(e){document.getElementById("err-msg").textContent="Error al regenerar: "+e.message;}
+  loading[chId]=false;renderChannelCards();updateBtn(false);
+}
+
+function toggleSpCh(btn){btn.classList.toggle("on");}
+
+async function generateSpecial(){
+  if(spGenerating)return;
+  const activeChs=[...document.querySelectorAll("#sp-channels .ch-toggle.on")].map(b=>b.dataset.ch);
+  if(!activeChs.length){document.getElementById("sp-err").textContent="Selecciona al menos un canal.";return;}
+  const briefing=document.getElementById("sp-briefing").value.trim();
+  if(!briefing){document.getElementById("sp-err").textContent="Escribe el briefing del copy.";return;}
+  document.getElementById("sp-err").textContent="";
+  spGenerating=true;
+  const btn=document.getElementById("btn-special");btn.disabled=true;btn.textContent="⟳ Generando…";
+  const tipo=document.getElementById("sp-tipo").value;
+  const area=document.getElementById("sp-area").value;
+  document.getElementById("sp-results").innerHTML=`<div style="color:var(--muted);font-size:13px;padding:12px 0">Generando copies en paralelo…</div>`;
+  window._spParams={tipo,area,briefing,activeChs};
+  const results={};
+  await Promise.all(activeChs.map(async chId=>{
+    try{
+      const sys=SP_PROMPTS[chId];
+      const enableWebSearch=document.getElementById("enable-websearch").checked;
+      const prompt=`Tipo: ${tipo} | Área: ${area}\nBriefing: ${briefing}\nMes de referencia: ${MONTHS[month]} ${year}\nGenera UN SOLO post adaptado a ${CHANNELS.find(c=>c.id===chId).label}.\nResponde ÚNICAMENTE con JSON: {"copy":"...","multimedia":"descripción para Canva o vacío","longitud":0}`;
+      const res=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,system:sys,messages:[{role:"user",content:prompt}],enableWebSearch})});
+      const data=await res.json();
+      const text=data.content?.map(i=>i.text||"").join("")||"";
+      results[chId]=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    }catch(e){results[chId]={copy:"Error al generar.",longitud:0};}
+  }));
+  window._spResults=results;
+  renderSpResults(results,activeChs,tipo,area);
+  spGenerating=false;btn.disabled=false;btn.textContent="✦ Generar copies";
+}
+
+function renderSpResults(results,activeChs,tipo,area){
+  const container=document.getElementById("sp-results");
+  container.innerHTML="";
+  if(!window._spFeedback)window._spFeedback={};
+  activeChs.forEach(chId=>{
+    const ch=CHANNELS.find(c=>c.id===chId);
+    const r=results[chId]||{copy:"",longitud:0};
+    if(!window._spFeedback[chId])window._spFeedback[chId]={text:"",editing:false};
+    const fb=window._spFeedback[chId];
+    const card=document.createElement("div");card.className="special-result-card";
+    card.innerHTML=`
+      <div class="special-result-title">
+        <span>${ch.icon} ${ch.label} · <span style="color:${lenColor(r.longitud,chId)}">${r.longitud} chars</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button onclick="copySpecialText('${chId}')" style="background:#EFF6FF;color:#1d4ed8;border:1px solid #BFDBFE;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">📋 Copiar</button>
+          <button onclick="downloadSpExcel('${chId}')" style="background:#217346;color:white;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">⬇ Excel</button>
+        </div>
+      </div>
+      <div class="special-copy" id="sp-copy-${chId}" contenteditable="true">${r.copy}</div>
+      ${r.multimedia?`<div style="font-size:12px;color:#5A67D8;margin-top:8px">🎨 ${r.multimedia}</div>`:""}
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.4px">💬 FEEDBACK PARA REHACER</div>
+        ${fb.editing
+          ?`<div>
+              <textarea id="sp-fb-ta-${chId}" rows="2" style="width:100%;border:1.5px solid #F59E0B;border-radius:7px;padding:6px 8px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB">${fb.text}</textarea>
+              <div style="display:flex;gap:6px;margin-top:5px">
+                <button onclick="saveSpFeedback('${chId}')" style="background:#F59E0B;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">Guardar</button>
+                <button onclick="cancelSpFeedback('${chId}')" style="background:#eee;color:#444;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit">Cancelar</button>
+              </div></div>`
+          :fb.text
+            ?`<div style="font-size:12px;color:#374151;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:6px 8px;cursor:pointer;margin-bottom:6px" onclick="editSpFeedback('${chId}')">${fb.text}</div>`
+            :`<div style="font-size:12px;color:#bbb;font-style:italic;cursor:pointer;padding:4px 6px;border-radius:6px;margin-bottom:4px" onclick="editSpFeedback('${chId}')">+ Añadir instrucciones para rehacer…</div>`
+        }
+        ${fb.text&&!fb.editing?`<button id="sp-regen-${chId}" onclick="regenSpSingle('${chId}')" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:7px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:2px">↺ Rehacer con feedback</button>`:""}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function editSpFeedback(chId){if(!window._spFeedback)window._spFeedback={};if(!window._spFeedback[chId])window._spFeedback[chId]={text:"",editing:false};window._spFeedback[chId].editing=true;renderSpResults(window._spResults,window._spParams.activeChs,window._spParams.tipo,window._spParams.area);}
+function cancelSpFeedback(chId){window._spFeedback[chId].editing=false;renderSpResults(window._spResults,window._spParams.activeChs,window._spParams.tipo,window._spParams.area);}
+function saveSpFeedback(chId){const ta=document.getElementById(`sp-fb-ta-${chId}`);if(ta)window._spFeedback[chId].text=ta.value;window._spFeedback[chId].editing=false;renderSpResults(window._spResults,window._spParams.activeChs,window._spParams.tipo,window._spParams.area);}
+
+async function regenSpSingle(chId){
+  const btn=document.getElementById(`sp-regen-${chId}`);if(btn){btn.disabled=true;btn.textContent="⟳ Rehaciendo…";}
+  const fb=window._spFeedback[chId]?.text||"";
+  const {tipo,area,briefing}=window._spParams;
+  const prevCopy=document.getElementById(`sp-copy-${chId}`)?.innerText||"";
+  try{
+    const sys=SP_PROMPTS[chId];
+    const prompt=`Tipo: ${tipo} | Área: ${area}\nBriefing original: ${briefing}\nCopy anterior: ${prevCopy}\nFEEDBACK (aplica estrictamente): ${fb}\nReescribe el post para ${CHANNELS.find(c=>c.id===chId).label}.\nResponde ÚNICAMENTE con JSON: {"copy":"...","multimedia":"descripción para Canva o vacío","longitud":0}`;
+    const res=await fetch(PROXY_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1200,system:sys,messages:[{role:"user",content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(i=>i.text||"").join("")||"";
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim());
+    window._spResults[chId]=parsed;
+    window._spFeedback[chId].editing=false;
+    renderSpResults(window._spResults,window._spParams.activeChs,tipo,area);
+  }catch(e){if(btn){btn.disabled=false;btn.textContent="↺ Rehacer con feedback";}}
+}
+
+function copySpecialText(chId){const el=document.getElementById(`sp-copy-${chId}`);if(!el)return;navigator.clipboard.writeText(el.innerText).then(()=>{const btns=document.querySelectorAll(`[onclick="copySpecialText('${chId}')"]`);btns.forEach(b=>{const o=b.textContent;b.textContent="✓ Copiado";setTimeout(()=>b.textContent=o,2000);});});}
+
+function downloadSpExcel(chId){
+  const el=document.getElementById(`sp-copy-${chId}`);if(!el)return;
+  const copy=el.innerText;const ch=CHANNELS.find(c=>c.id===chId);const {tipo,area}=window._spParams||{};
+  try{
+    if(!window.XLSX){const csv=`"Canal","Tipo","Área","Copy","Longitud"\n"${ch?.label}","${tipo}","${area}","${copy.replace(/"/g,'""')}","${copy.length}"`;const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`Servier_CopyEspecial_${chId}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);return;}
+    const wb=window.XLSX.utils.book_new();
+    const ws=window.XLSX.utils.aoa_to_sheet([["Canal","Tipo","Área","Copy","Multimedia","Longitud"],[ch?.label,tipo,area,copy,window._spResults?.[chId]?.multimedia||"",copy.length]]);
+    ws["!cols"]=[{wch:16},{wch:14},{wch:14},{wch:80},{wch:30},{wch:8}];
+    window.XLSX.utils.book_append_sheet(wb,ws,"Copy especial");
+    window.XLSX.writeFile(wb,`Servier_CopyEspecial_${chId}_${MONTHS[month]}_${year}.xlsx`);
+  }catch(e){alert("Error al exportar: "+e.message);}
+}
+
+async function saveVersion(){
+  const v=history.filter(e=>e.month===month&&e.year===year).length+1;
+  history.push({id:Date.now().toString(),month,year,extraContext:document.getElementById("inp-context").value,channelData:JSON.parse(JSON.stringify(channelData)),createdAt:new Date().toISOString(),version:v});
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(history));
+  updateHistCount();
+  const msg=document.getElementById("save-msg");msg.textContent=`✓ Guardado como ${MONTHS[month]} ${year} v${v}`;
+  setTimeout(()=>msg.textContent="",3500);
+}
+function updateHistCount(){const el=document.getElementById("hist-count");el.textContent=history.length||"";el.style.display=history.length?"inline":"none";}
+function toggleHistory(){const p=document.getElementById("history-panel");if(p.style.display==="none"){renderHistoryPanel();p.style.display="block";}else p.style.display="none";}
+function renderHistoryPanel(){
+  const panel=document.getElementById("history-panel");
+  if(!history.length){panel.innerHTML=`<div style="padding:32px;text-align:center;color:#aaa;font-size:14px">Sin versiones guardadas aún.</div>`;return;}
+  panel.innerHTML=`<div style="padding:20px 24px"><div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:14px">🗂️ Historial · Servier España <span style="font-size:12px;color:#888;font-weight:400">(${history.length} versiones)</span></div>
+    <div style="display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto">
+      ${[...history].reverse().map(e=>{
+        const chs=CHANNELS.filter(c=>e.channelData[c.id]);
+        const total=chs.reduce((s,c)=>s+(e.channelData[c.id]?.posts?.length||0),0);
+        const date=new Date(e.createdAt).toLocaleString("es-ES",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+        return `<div style="background:white;border:1.5px solid #E4E7EC;border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;margin-bottom:3px">${MONTHS[e.month]} ${e.year}
+              <span style="background:#EFF6FF;color:#1e40af;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:600;margin-left:6px">v${e.version}</span>
+              <span style="color:#aaa;font-size:11px;margin-left:4px">${total} posts</span></div>
+            <div style="font-size:12px;color:#888;margin-bottom:6px">${date}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              ${chs.map(c=>`<span style="font-size:11px;background:#F8F9FB;border:1px solid #E4E7EC;border-radius:8px;padding:2px 8px;color:#555">${c.icon} ${c.label} · ${e.channelData[c.id]?.posts?.length}</span>`).join("")}
+            </div>
+          </div>
+          <button onclick="loadVersion('${e.id}')" style="background:linear-gradient(135deg,var(--navy),var(--navy2));color:white;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">↩ Cargar</button>
+        </div>`;
+      }).join("")}
+    </div></div>`;
+}
+function loadVersion(id){
+  const e=history.find(h=>h.id===id);if(!e)return;
+  month=e.month;year=e.year;
+  document.getElementById("sel-month").value=month;
+  document.getElementById("inp-year").value=year;
+  document.getElementById("inp-context").value=e.extraContext||"";
+  channelData=JSON.parse(JSON.stringify(e.channelData));
+  activeChannel=CHANNELS.find(c=>channelData[c.id])?.id||"x";
+  editingCopy=null;editingFeedback=null;
+  document.getElementById("history-panel").style.display="none";
+  renderChannelCards();renderResults();
+}
+function persistFeedback(){if(!history.length)return;history[history.length-1].channelData=JSON.parse(JSON.stringify(channelData));localStorage.setItem(STORAGE_KEY,JSON.stringify(history));}
+
+function renderChannelCards(){
+  const grid=document.getElementById("ch-grid");grid.innerHTML="";
+  const anyLoading=Object.values(loading).some(Boolean);
+  CHANNELS.forEach(ch=>{
+    const done=!!channelData[ch.id],isLoading=loading[ch.id];
+    const btnBg=anyLoading?"#ccc":done?"#F0F4F8":ch.bg;
+    const btnColor=anyLoading?"#888":done?"#344054":"white";
+    const div=document.createElement("div");
+    div.className="ch-card"+(activeChannel===ch.id&&done?" active":"");
+    div.innerHTML=`<div class="ch-card-top">
+      <div class="ch-icon" style="background:${ch.bg}">${ch.icon}</div>
+      <div><div class="ch-name">${ch.label}</div><div class="ch-freq">${ch.freq}</div></div>
+      ${done?'<span style="margin-left:auto;font-size:18px">✅</span>':""}
+    </div>
+    <div class="ch-posts">${ch.ppm}</div>
+    <button class="btn-gen" style="background:${btnBg};color:${btnColor}" ${anyLoading?"disabled":""} onclick="generateSingle('${ch.id}')">
+      ${isLoading?"⟳ Generando…":done?"↺ Regenerar":"✦ Generar"}
+    </button>`;
+    grid.appendChild(div);
+  });
+}
+renderChannelCards();
+
+function setValoration(chId,val){generalFeedback[chId].valoration=generalFeedback[chId].valoration===val?"":val;renderResults();}
+function editGeneralFeedback(chId){generalFeedback[chId].editingText=true;renderResults();}
+function cancelGeneralFeedback(chId){generalFeedback[chId].editingText=false;renderResults();}
+function saveGeneralFeedback(chId){const val=document.getElementById("gfb-ta")?.value||"";generalFeedback[chId].text=val;generalFeedback[chId].editingText=false;renderResults();}
+
+function renderResults(){
+  const container=document.getElementById("results");
+  const data=channelData[activeChannel];
+  if(!data){container.innerHTML="";return;}
+  const activeChs=CHANNELS.filter(c=>channelData[c.id]);
+  const tabsHTML=activeChs.map(ch=>{const isA=ch.id===activeChannel;const bg=isA?(ch.id==="x"?"#1a1a1a":ch.id==="instagram"?"#E1306C":"#0077B5"):"white";return `<button class="tab-btn" style="background:${bg};color:${isA?"white":"#444"};border-color:${isA?"transparent":"#E4E7EC"}" onclick="switchChannel('${ch.id}')">${ch.icon} ${ch.label} (${channelData[ch.id].posts.length})</button>`;}).join("");
+  const areaBadges=Object.entries(AREA_CONFIG).map(([k,cfg])=>{const cnt=data.posts.filter(p=>p.area===k).length;if(!cnt)return"";return `<div class="area-badge" style="background:${cfg.bg};border-color:${cfg.color}33;color:${cfg.color}"><span>${cfg.emoji}</span><strong>${cnt}</strong><span style="font-size:12px;color:#666">${cfg.label}</span></div>`;}).join("");
+  const hasFormato=activeChannel==="instagram";
+  const headers=["Día","Área",hasFormato?"Formato":"","Efeméride","Copy","Multimedia","Fuente","Long.","💬 Feedback",""].filter(Boolean);
+  const fbCount=data.posts.filter(p=>p.feedback).length;
+  const gfb=generalFeedback[activeChannel];
+  const valBtns=["Aprobado","Revisar","Rechazar"].map(v=>{const cls=v==="Aprobado"?"aprobado":v==="Revisar"?"revisar":"rechazar";const active=gfb.valoration===v;return `<button class="val-btn ${active?cls:""}" onclick="setValoration('${activeChannel}','${v}')">${v==="Aprobado"?"✅":v==="Revisar"?"🔄":"❌"} ${v}</button>`;}).join("");
+  const gfbBox=`<div class="general-feedback">
+    <div class="general-feedback-title">💬 Feedback general · ${CHANNELS.find(c=>c.id===activeChannel)?.label}</div>
+    <div class="valoration-row">${valBtns}</div>
+    ${gfb.editingText
+      ?`<textarea id="gfb-ta" rows="3" style="width:100%;border:1.5px solid #F59E0B;border-radius:8px;padding:8px;font-size:13px;font-family:inherit;resize:none;outline:none;background:#FFFBEB">${gfb.text}</textarea>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="saveGeneralFeedback('${activeChannel}')" style="background:#F59E0B;color:white;border:none;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Guardar</button>
+          <button onclick="cancelGeneralFeedback('${activeChannel}')" style="background:#eee;color:#444;border:none;border-radius:7px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit">Cancelar</button>
+        </div>`
+      :gfb.text?`<div class="feedback-note" onclick="editGeneralFeedback('${activeChannel}')">${gfb.text}</div>`:`<div class="feedback-empty" onclick="editGeneralFeedback('${activeChannel}')">+ Añadir comentario general…</div>`}
+    ${(gfb.text||gfb.valoration)&&!gfb.editingText?`<button class="btn-regen-feedback" onclick="regenWithGeneralFeedback('${activeChannel}')">↺ Regenerar plan con este feedback</button>`:""}
+  </div>`;
+  const rows=data.posts.map((r,i)=>{
+    const area=AREA_CONFIG[r.area]||{label:r.area,color:"#666",bg:"#f9f9f9",emoji:""};
+    const lenC=lenColor(r.longitud,activeChannel);
+    const fmtCell=hasFormato?`<td><span style="background:#F5F5F5;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;color:#444">${r.formato||"Feed"}</span></td>`:"";
+    const copyCell=editingCopy===i
+      ?`<div><textarea class="edit-area" id="edit-ta" rows="5">${r.copy}</textarea>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+            <span style="font-size:11px;color:${lenC}" id="edit-len">${r.longitud} chars</span>
+            <button onclick="saveCopy(${i})" style="margin-left:auto;background:var(--navy);color:white;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:12px;font-family:inherit">Guardar</button>
+            <button onclick="cancelEdit()" style="background:#eee;color:#444;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:12px;font-family:inherit">Cancelar</button>
+          </div></div>`
+      :`<div class="copy-cell" onclick="startEdit(${i})">${r.copy}</div>`;
+    const fbCell=editingFeedback===i
+      ?`<div><textarea id="fb-ta" rows="3" style="width:100%;border:1.5px solid #F59E0B;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB">${r.feedback||""}</textarea>
+          <div style="display:flex;gap:6px;margin-top:4px">
+            <button onclick="saveFeedback(${i})" style="background:#F59E0B;color:white;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit">Guardar</button>
+            <button onclick="cancelFeedback()" style="background:#eee;color:#444;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:inherit">Cancelar</button>
+          </div></div>`
+      :`<div>${r.feedback?`<div class="feedback-note" onclick="editingFeedback=${i};renderResults()">${r.feedback}</div><div class="feedback-meta">✍️ ${r.feedbackAuthor} · ${r.feedbackDate}</div><button class="btn-rewrite" id="rewrite-btn-${i}" onclick="rewriteSingleCopy(${i})">↺ Rehacer con feedback</button>`:`<div class="feedback-empty" onclick="editingFeedback=${i};renderResults()">+ Añadir nota</div>`}</div>`;
+    const fuente=r.fuente?`<a href="${r.fuente}" target="_blank" rel="noreferrer" style="color:#0066CC;text-decoration:none;word-break:break-all;font-size:12px">${r.fuente.replace(/^https?:\/\//,"").substring(0,30)}…</a>`:`<span style="color:#ddd">—</span>`;
+    return `<tr>
+      <td style="font-weight:700;color:var(--navy);width:40px">${r.dia}/${month+1}</td>
+      <td style="width:120px"><span style="background:${area.bg};color:${area.color};border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap">${area.emoji} ${area.label}</span></td>
+      ${fmtCell}
+      <td style="font-size:12px;color:#1e40af;width:130px">${r.efemeride||'<span style="color:#ddd">—</span>'}</td>
+      <td style="max-width:320px">${copyCell}</td>
+      <td style="font-size:13px;color:#5A67D8;width:140px">${r.multimedia||'<span style="color:#ddd">—</span>'}</td>
+      <td style="font-size:12px;width:150px">${fuente}</td>
+      <td style="width:52px"><span style="font-weight:700;font-size:13px;color:${lenC}">${r.longitud}</span></td>
+      <td class="feedback-cell">${fbCell}</td>
+      <td style="width:30px"><button onclick="startEdit(${i})" style="background:none;border:none;cursor:pointer;font-size:15px">✏️</button></td>
+    </tr>`;
+  }).join("");
+  container.innerHTML=`
+    <div class="tab-row">${tabsHTML}<div class="action-row"><button class="abtn" style="background:#F4F6F9;color:#344054" onclick="copyTable()">📋 Copiar</button><button class="abtn" style="background:#217346;color:white" onclick="exportExcel()">⬇ Excel</button></div></div>
+    <div class="strategy"><div class="strategy-title">📋 ESTRATEGIA DEL MES · ${CHANNELS.find(c=>c.id===activeChannel)?.label.toUpperCase()}</div><p>${data.resumen}</p>${data.efemerides?.length?`<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">${data.efemerides.map(ef=>`<span class="ef-pill">📅 ${ef}</span>`).join("")}</div>`:""}</div>
+    ${gfbBox}
+    <div class="area-row">${areaBadges}${fbCount?`<div style="margin-left:auto;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:6px 14px;font-size:12px;color:#92400E;font-weight:600">💬 ${fbCount} nota${fbCount>1?"s":""}</div>`:""}</div>
+    <div class="tbl-wrap"><div style="overflow-x:auto"><table id="main-table"><thead><tr>${headers.map(h=>`<th>${h.toUpperCase()}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="tbl-foot"><span>🟢 óptimo</span><span>🟡 aceptable</span><span>🔴 revisar longitud</span><span style="margin-left:auto;color:#bbb">✏️ editar copy · 💬 añadir nota · ↺ rehacer</span></div></div>`;
+  setTimeout(()=>{const ta=document.getElementById("edit-ta");if(ta)ta.addEventListener("input",()=>{const el=document.getElementById("edit-len");if(el){el.textContent=ta.value.length+" chars";el.style.color=lenColor(ta.value.length,activeChannel);}});},50);
+}
+function switchChannel(chId){activeChannel=chId;editingCopy=null;editingFeedback=null;renderChannelCards();renderResults();}
+function startEdit(i){editingCopy=i;editingFeedback=null;renderResults();}
+function cancelEdit(){editingCopy=null;renderResults();}
+function saveCopy(i){const val=document.getElementById("edit-ta")?.value||"";channelData[activeChannel].posts[i].copy=val;channelData[activeChannel].posts[i].longitud=val.length;editingCopy=null;renderResults();}
+function saveFeedback(i){const val=document.getElementById("fb-ta")?.value||"";channelData[activeChannel].posts[i].feedback=val;channelData[activeChannel].posts[i].feedbackAuthor=currentUser.name;channelData[activeChannel].posts[i].feedbackDate=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});editingFeedback=null;persistFeedback();renderResults();}
+function cancelFeedback(){editingFeedback=null;renderResults();}
+function copyTable(){const tbl=document.getElementById("main-table");if(!tbl)return;const r=document.createRange();r.selectNode(tbl);window.getSelection().removeAllRanges();window.getSelection().addRange(r);document.execCommand("copy");window.getSelection().removeAllRanges();const b=document.querySelector('[onclick="copyTable()"]');const orig=b.textContent;b.textContent="✓ Copiado";setTimeout(()=>b.textContent=orig,2000);}
+function exportExcel(){
+  try{
+    if(!window.XLSX){const allRows=[["Canal","Día","Área","Efeméride","Copy","Multimedia","Fuente","Longitud","Feedback","Autor"]];CHANNELS.forEach(ch=>{const d=channelData[ch.id];if(!d)return;d.posts.forEach(r=>allRows.push([ch.label,`${r.dia}/${month+1}`,AREA_CONFIG[r.area]?.label||r.area,r.efemeride||"",r.copy||"",r.multimedia||"",r.fuente||"",r.longitud,r.feedback||"",r.feedbackAuthor||""]));});const csv=allRows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`Servier_${MONTHS[month]}_${year}.csv`;document.body.appendChild(a);a.click();document.body.removeChild(a);return;}
+    const wb=window.XLSX.utils.book_new();
+    CHANNELS.forEach(ch=>{const d=channelData[ch.id];if(!d)return;const hf=ch.id==="instagram";const hdrs=["Día","Área",hf?"Formato":"","Efeméride","Copy","Multimedia","Fuente","Longitud","Feedback","Autor"].filter(Boolean);const rows=d.posts.map(r=>[`${r.dia}/${month+1}`,AREA_CONFIG[r.area]?.label||r.area,hf?(r.formato||"Feed"):undefined,r.efemeride||"",r.copy||"",r.multimedia||"",r.fuente||"",r.longitud,r.feedback||"",r.feedbackAuthor||""].filter((_,i)=>!(!hf&&i===2)));const ws=window.XLSX.utils.aoa_to_sheet([hdrs,...rows]);const colW=[8,14,10,16,60,30,30,8,40,14];ws["!cols"]=colW.map(w=>({wch:w}));window.XLSX.utils.book_append_sheet(wb,ws,ch.label.substring(0,31));});
+    window.XLSX.writeFile(wb,`Servier_${MONTHS[month]}_${year}.xlsx`);
+  }catch(e){alert("Error al exportar: "+e.message);console.error(e);}
+}
+</script>
+</body>
+</html>

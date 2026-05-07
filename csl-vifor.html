@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Hub – CSL Vifor</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--red:#CC0000;--red-l:#fdf0f0;--red-d:#a80000;--gray:#3a3a3a;--gray-m:#666;--gray-l:#f4f4f4;--border:#e2e2e2;--wh:#fff;--note:#fff9e6;--note-b:#e8c940;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#ebebeb;color:var(--gray);min-height:100vh;display:flex;flex-direction:column;}
+
+.top-bar{background:var(--red);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;}
+.top-bar-left{display:flex;align-items:center;gap:12px;}
+.btn-back{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:background .2s;}
+.btn-back:hover{background:rgba(255,255,255,.25);}
+.logo-text{font-size:20px;font-weight:300;color:rgba(255,255,255,.75);letter-spacing:.5px;}
+.logo-text b{font-weight:700;color:#fff;}
+.logo-text em{font-style:normal;font-weight:700;color:#fff;}
+.top-bar-right{font-size:11px;color:rgba(255,255,255,.65);font-weight:500;letter-spacing:.5px;}
+
+header{background:var(--wh);border-bottom:1px solid var(--border);padding:0 28px;}
+nav{display:flex;gap:0;}
+.nav-btn{padding:14px 24px;border:none;background:none;font-size:13px;font-weight:600;color:#999;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;letter-spacing:.3px;}
+.nav-btn:hover{color:var(--red);}
+.nav-btn.active{color:var(--red);border-bottom-color:var(--red);}
+
+main{flex:1;max-width:1060px;margin:28px auto;padding:0 20px;width:100%;}
+.panel{display:none;}.panel.active{display:block;}
+.section-header{margin-bottom:22px;}
+.section-title{font-size:18px;font-weight:700;color:var(--gray);}
+.section-sub{font-size:12px;color:#999;margin-top:3px;}
+
+.card{background:var(--wh);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden;}
+.card-header{background:var(--gray-l);border-bottom:1px solid var(--border);padding:11px 18px;display:flex;align-items:center;justify-content:space-between;}
+.card-header-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--red);}
+.card-body{padding:18px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field label,.field-label{display:block;font-size:11px;font-weight:700;color:var(--gray-m);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+select,input[type=text]{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--gray);background:var(--wh);appearance:none;}
+select:focus,input:focus{outline:none;border-color:var(--red);}
+
+.check-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;}
+.check-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px;transition:all .15s;line-height:1.3;}
+.check-item:hover{border-color:var(--red);background:var(--red-l);}
+.check-item input[type=checkbox]{accent-color:var(--red);width:13px;height:13px;flex-shrink:0;}
+.check-item.checked{border-color:var(--red);background:var(--red-l);font-weight:600;color:var(--red);}
+
+textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--gray);resize:vertical;font-family:inherit;line-height:1.5;}
+textarea:focus{outline:none;border-color:var(--red);}
+
+.btn{padding:9px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--red);color:#fff;}.btn-primary:hover{background:var(--red-d);}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--gray-m);}.btn-ghost:hover{border-color:#bbb;background:var(--gray-l);}
+.btn-green{background:#1a9e52;color:#fff;}.btn-green:hover{background:#148040;}
+.btn-blue{background:#1a6fc4;color:#fff;}.btn-blue:hover{background:#155aa0;}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.btn-copy{background:#f0f0f0;color:#555;border:1px solid #ddd;}.btn-copy:hover{background:#e4e4e4;}
+.btn-copy.copied{background:#d4f5e1;color:#0d6633;border-color:#a8e6c0;}
+
+.gen-bar{display:flex;align-items:center;gap:12px;padding-top:4px;flex-wrap:wrap;}
+.loading{display:none;align-items:center;gap:7px;color:var(--red);font-size:12px;font-weight:600;}
+.loading.show{display:flex;}
+.spinner{width:16px;height:16px;border:2.5px solid #f0c0c0;border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* NOTES */
+.notes-block{background:#fffdf5;border:1px solid var(--note-b);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.notes-block-header{background:#fff8dc;border-bottom:1px solid var(--note-b);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.notes-block-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#8a6e00;}
+.notes-body{padding:14px;}
+.notes-hint{font-size:11px;color:#b09040;margin-bottom:10px;line-height:1.5;}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:10px;}
+.note-card{background:var(--note);border:1px solid var(--note-b);border-radius:8px;padding:10px 10px 6px;position:relative;}
+.note-card textarea{background:transparent;border:none;resize:none;font-size:12px;color:var(--gray);width:100%;outline:none;font-family:inherit;line-height:1.5;min-height:56px;}
+.note-del{position:absolute;top:5px;right:7px;background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;line-height:1;padding:0;}
+.note-del:hover{color:var(--red);}
+.note-ts{font-size:10px;color:#c0a030;margin-top:3px;}
+.note-attach-row{display:flex;align-items:center;gap:6px;margin-top:6px;border-top:1px solid #f0e090;padding-top:6px;flex-wrap:wrap;}
+.note-attach-btn{font-size:10px;padding:3px 8px;border:1px dashed #c8a820;border-radius:4px;background:none;color:#8a6e00;cursor:pointer;transition:all .15s;}
+.note-attach-btn:hover{background:#fff3b0;}
+.note-file-chip{display:inline-flex;align-items:center;gap:4px;background:#fff3b0;border:1px solid #e0c030;border-radius:12px;padding:2px 8px;font-size:10px;color:#6a5200;}
+.note-file-chip button{background:none;border:none;cursor:pointer;color:#c0a030;font-size:11px;line-height:1;padding:0;}
+.note-file-chip button:hover{color:var(--red);}
+
+/* RESULTS */
+.results-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.results-bar span{font-size:12px;color:#888;font-weight:500;}
+.post-card{background:var(--wh);border:1px solid var(--border);border-radius:9px;margin-bottom:13px;overflow:hidden;}
+.post-header{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--gray-l);border-bottom:1px solid var(--border);}
+.post-num{font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.4px;}
+.post-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.tag-date{background:#e8e8e8;color:#555;}
+.tag-format{background:#fff3cd;color:#7a5a00;}
+.tag-area{background:#d1ecf1;color:#0c5460;}
+.tag-fb{background:#fff0f0;color:#c00;}
+.post-body{padding:13px;}
+.post-ta{width:100%;border:1px solid transparent;border-radius:6px;padding:9px;font-size:13px;color:var(--gray);line-height:1.65;resize:vertical;background:transparent;font-family:inherit;transition:border .2s,background .2s;}
+.post-ta:hover{border-color:var(--border);background:#fafafa;}
+.post-ta:focus{border-color:var(--red);background:var(--wh);outline:none;}
+.lang-div{border:none;border-top:1px dashed var(--border);margin:10px 0;}
+.lang-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#bbb;margin-bottom:5px;}
+.post-footer{padding:8px 13px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:5px;background:#fafafa;flex-wrap:wrap;}
+.char-c{font-size:10px;color:#aaa;}
+.char-c.over{color:#dc3545;}
+.error-msg{background:#fff3f3;border:1px solid #f5c6cb;border-radius:8px;padding:12px 16px;color:#721c24;font-size:12px;margin-top:12px;}
+
+/* Feedback per post */
+.post-fb-section{padding:10px 13px;border-top:1px solid #f5f5f5;background:#fafafa;}
+.post-fb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:5px;}
+.post-fb-note{font-size:12px;color:#374151;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:6px 8px;cursor:pointer;margin-bottom:5px;white-space:pre-wrap;}
+.post-fb-note:hover{background:#FEF3C7;}
+.post-fb-empty{font-size:12px;color:#bbb;font-style:italic;cursor:pointer;padding:4px 6px;border-radius:6px;}
+.post-fb-empty:hover{background:#FFFBEB;color:#92400E;}
+.btn-rewrite-post{background:var(--red);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn-rewrite-post:disabled{opacity:.5;cursor:not-allowed;}
+
+/* General feedback */
+.general-fb{background:var(--wh);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:14px;}
+.general-fb-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--red);margin-bottom:10px;}
+.val-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+.val-btn{border:1.5px solid var(--border);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--wh);}
+.val-btn.aprobado{border-color:#059669;background:#D1FAE5;color:#065F46;}
+.val-btn.revisar{border-color:#D97706;background:#FEF3C7;color:#92400E;}
+.val-btn.rechazar{border-color:#DC2626;background:#FEE2E2;color:#991B1B;}
+.btn-regen-fb{background:var(--red);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;}
+.btn-regen-fb:disabled{opacity:.5;cursor:not-allowed;}
+
+footer{background:var(--red);padding:8px 28px;text-align:center;}
+footer span{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.3px;}
+
+/* Learning panel */
+.learn-summary-card{background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+.learn-summary-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#15803d;margin-bottom:10px;}
+.learn-point{font-size:13px;color:#374151;line-height:1.65;padding:6px 0;border-bottom:1px solid #D1FAE5;}
+.learn-point:last-child{border-bottom:none;}
+.learn-history-item{background:var(--gray-l);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.learn-history-meta{font-size:10px;color:#aaa;margin-bottom:4px;}
+.learn-history-preview{font-size:12px;color:#555;line-height:1.5;white-space:pre-wrap;max-height:60px;overflow:hidden;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left">
+    <a href="index.html" class="btn-back">← Dashboard</a>
+    <div class="logo-text"><b>Science</b><em>Hub</em> <span style="font-size:12px;opacity:.6;">by</span> <em>CSL</em></div>
+  </div>
+  <div class="top-bar-right">CONTENT HUB · CÍCERO COMUNICACIÓN</div>
+</div>
+
+<header>
+  <nav>
+    <button class="nav-btn active" onclick="switchPanel('x',this)">𝕏 Twitter / X</button>
+    <button class="nav-btn" onclick="switchPanel('ig',this)">📸 Instagram</button>
+    <button class="nav-btn" onclick="switchPanel('special',this)">✏️ Copys especiales</button>
+    <button class="nav-btn" onclick="switchPanel('learning',this)">🧠 Aprendizaje</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ══ PANEL X ══ -->
+<div id="panel-x" class="panel active">
+  <div class="section-header">
+    <div class="section-title">Batería mensual · X (Twitter)</div>
+    <div class="section-sub">3 posts semanales (L–X–V) · Solo español · Copies completos y publicables</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Configuración de la batería</span></div>
+    <div class="card-body">
+      <div class="two-col">
+        <div class="field"><label>Mes de publicación</label>
+          <select id="x-mes"><option value="">Selecciona mes</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div>
+        <div class="field"><label>Nº de posts</label>
+          <select id="x-num"><option value="6">6 posts (~2 semanas)</option><option value="10">10 posts (~3 semanas)</option><option value="13" selected>13 posts (mes completo)</option></select></div>
+      </div>
+      <div class="field"><label>Áreas terapéuticas a cubrir</label>
+        <div class="check-grid" id="x-areas" style="margin-top:6px;">
+          <label class="check-item checked"><input type="checkbox" checked value="Nefrología / ERC">Nefrología / ERC</label>
+          <label class="check-item checked"><input type="checkbox" checked value="Vasculitis ANCA">Vasculitis ANCA</label>
+          <label class="check-item checked"><input type="checkbox" checked value="Déficit de hierro / Anemia ferropénica">Déficit de hierro</label>
+          <label class="check-item"><input type="checkbox" value="Diálisis / Trasplante">Diálisis / Trasplante</label>
+          <label class="check-item"><input type="checkbox" value="Patient Blood Management (PBM)">Patient Blood Management</label>
+          <label class="check-item"><input type="checkbox" value="Insuficiencia Cardiaca / Síndrome Cardiorrenal">Cardiorrenal / IC</label>
+          <label class="check-item"><input type="checkbox" value="Hiperpotasemia">Hiperpotasemia</label>
+          <label class="check-item"><input type="checkbox" value="Hematología / Hemofilia">Hematología / Hemofilia</label>
+          <label class="check-item"><input type="checkbox" value="Inmunología / Inmunodeficiencias">Inmunología</label>
+          <label class="check-item"><input type="checkbox" value="Enfermedades raras / Angioedema hereditario">Enfermedades raras / AEH</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes del mes</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('x')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Días mundiales, congresos, noticias, campañas, colaboraciones con influencers, restricciones, ideas concretas… Adjunta archivos Excel de baterías anteriores, PDFs, Word o imágenes para que la IA los tenga en cuenta.</div>
+      <div class="notes-grid" id="x-notes-grid"></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generateX()" id="btn-gen-x">Generar batería X</button>
+      <div class="loading" id="x-loading"><div class="spinner"></div> Generando posts...</div>
+    </div>
+  </div></div>
+  <div id="x-results"></div>
+</div>
+
+<!-- ══ PANEL IG ══ -->
+<div id="panel-ig" class="panel">
+  <div class="section-header">
+    <div class="section-title">Planificación mensual · Instagram</div>
+    <div class="section-sub">12 contenidos/mes · L–X–V · Español + Português (Portugal) · Copies publicables</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Configuración de la batería</span></div>
+    <div class="card-body">
+      <div class="two-col">
+        <div class="field"><label>Mes de publicación</label>
+          <select id="ig-mes"><option value="">Selecciona mes</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option></select></div>
+        <div class="field"><label>Nº de contenidos</label>
+          <select id="ig-num"><option value="6">6 contenidos</option><option value="12" selected>12 contenidos (mes completo)</option></select></div>
+      </div>
+      <div class="field"><label>Áreas terapéuticas</label>
+        <div class="check-grid" id="ig-areas" style="margin-top:6px;">
+          <label class="check-item checked"><input type="checkbox" checked value="Nefrología / ERC / salud renal">Nefrología / ERC</label>
+          <label class="check-item checked"><input type="checkbox" checked value="Vasculitis ANCA">Vasculitis ANCA</label>
+          <label class="check-item"><input type="checkbox" value="Déficit de hierro / Anemia ferropénica">Déficit de hierro</label>
+          <label class="check-item"><input type="checkbox" value="Patient Blood Management (PBM)">Patient Blood Management</label>
+          <label class="check-item"><input type="checkbox" value="Hematología / Hemofilia / trastornos hemorrágicos">Hematología / Hemofilia</label>
+          <label class="check-item"><input type="checkbox" value="Hiperpotasemia">Hiperpotasemia</label>
+          <label class="check-item"><input type="checkbox" value="Enfermedades raras / Angioedema hereditario">Enfermedades raras / AEH</label>
+          <label class="check-item"><input type="checkbox" value="Inmunología / Inmunodeficiencias">Inmunología</label>
+          <label class="check-item"><input type="checkbox" value="Hábitos saludables / salud renal en el día a día">Hábitos saludables</label>
+          <label class="check-item"><input type="checkbox" value="Recetas saludables para pacientes renales">Recetas renales</label>
+        </div>
+      </div>
+      <div class="two-col" style="margin-top:4px;">
+        <div class="field"><label>Formatos</label>
+          <div class="check-grid" style="grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
+            <label class="check-item checked"><input type="checkbox" checked value="Reel">Reel</label>
+            <label class="check-item checked"><input type="checkbox" checked value="Carrusel">Carrusel</label>
+            <label class="check-item checked"><input type="checkbox" checked value="Post estático">Post</label>
+            <label class="check-item"><input type="checkbox" value="Story">Story</label>
+          </div>
+        </div>
+        <div class="field"><label>Series recurrentes</label>
+          <div class="check-grid" style="grid-template-columns:1fr;gap:6px;margin-top:6px;">
+            <label class="check-item"><input type="checkbox" value="#RenalPedia (definición de término médico)">#RenalPedia</label>
+            <label class="check-item"><input type="checkbox" value="#DesmontandoMitos (verdadero o falso)">#DesmontandoMitos</label>
+            <label class="check-item"><input type="checkbox" value="Testimonio de paciente">Testimonio paciente</label>
+            <label class="check-item"><input type="checkbox" value="Receta saludable renal">Receta renal</label>
+            <label class="check-item"><input type="checkbox" value="Visita al especialista / consejos prácticos">Visita al especialista</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes del mes</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('ig')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Días mundiales, congresos, noticias, colaboraciones, campañas activas… Adjunta archivos Excel de baterías anteriores, PDFs, Word o imágenes.</div>
+      <div class="notes-grid" id="ig-notes-grid"></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generateIG()" id="btn-gen-ig">Generar planificación Instagram</button>
+      <div class="loading" id="ig-loading"><div class="spinner"></div> Generando contenidos...</div>
+    </div>
+  </div></div>
+  <div id="ig-results"></div>
+</div>
+
+<!-- ══ PANEL ESPECIAL ══ -->
+<div id="panel-special" class="panel">
+  <div class="section-header">
+    <div class="section-title">Copys especiales</div>
+    <div class="section-sub">Solicitudes puntuales fuera del ciclo mensual · Cualquier canal</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Briefing</span></div>
+    <div class="card-body">
+      <div class="two-col">
+        <div class="field"><label>Canal / red social</label>
+          <select id="sp-canal"><option>Instagram</option><option>X (Twitter)</option><option>LinkedIn</option><option>Facebook</option><option>Otro</option></select></div>
+        <div class="field"><label>Nº de copys</label>
+          <input type="number" id="sp-num" min="1" placeholder="Ej: 5" style="width:100%;"/></div>
+        <div class="field"><label>Idioma(s)</label>
+          <select id="sp-idioma"><option>Solo español</option><option>Español + Portugués (Portugal)</option><option>Solo portugués</option></select></div>
+      </div>
+      <div class="field"><label>Briefing</label>
+        <textarea id="sp-brief" rows="4" placeholder="Describe qué necesitas: tema, objetivo, tono, contexto de campaña, público, restricciones…"></textarea></div>
+    </div>
+  </div>
+
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes y referencias</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('sp')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Añade contexto, claims aprobados, datos, webs de referencia, baterías anteriores en Excel… Adjunta archivos.</div>
+      <div class="notes-grid" id="sp-notes-grid"></div>
+    </div>
+  </div>
+
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generateSpecial()" id="btn-gen-sp">Generar copys</button>
+      <div class="loading" id="sp-loading"><div class="spinner"></div> Generando...</div>
+    </div>
+  </div></div>
+  <div id="sp-results"></div>
+</div>
+
+<!-- ══ PANEL APRENDIZAJE ══ -->
+<div id="panel-learning" class="panel">
+  <div class="section-header">
+    <div class="section-title">🧠 Aprendizaje del cliente</div>
+    <div class="section-sub">Instrucciones permanentes que la IA aplicará en todas las baterías · Se guardan automáticamente</div>
+  </div>
+
+  <!-- Resumen de feedback de la batería actual -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">📋 Resumen de feedback de la batería</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">Genera automáticamente un resumen de todas las notas de feedback de la batería activa (X o Instagram). Cópialo directamente en el cajón de abajo para resumirlo en aprendizajes.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="extractBatteryFeedback('x')">📋 Extraer feedback de X</button>
+        <button class="btn btn-ghost btn-sm" onclick="extractBatteryFeedback('ig')">📋 Extraer feedback de Instagram</button>
+        <button class="btn btn-ghost btn-sm" onclick="extractBatteryFeedback('sp')">📋 Extraer feedback de Copys especiales</button>
+      </div>
+      <div id="extracted-feedback-result" style="font-size:13px;color:#374151;background:#F8F9FB;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:48px;white-space:pre-wrap;line-height:1.65;display:none;"></div>
+      <div id="extracted-feedback-msg" style="font-size:12px;color:#888;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Instrucciones permanentes -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-header-title">📌 Instrucciones permanentes</span>
+      <span style="font-size:10px;color:#aaa;" id="learn-saved-ts"></span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">Escribe aquí todo lo que la IA debe recordar siempre sobre CSL Vifor: tono aprendido, errores a evitar, preferencias de formato, copies que funcionaron, instrucciones específicas del cliente… Se inyecta automáticamente en cada batería que generes.</p>
+      <textarea id="learn-permanent" rows="10" placeholder="Ejemplos:
+– Evitar frases como 'en el mundo de la salud' o 'como todos sabemos'
+– El cliente prefiere posts que empiecen con una pregunta retórica
+– En X, los posts con dato numérico al inicio funcionan mejor
+– Para Instagram, los carruseles de #DesmontandoMitos tienen más engagement
+– El tono en portugués debe ser más formal que en español
+– Evitar referencias a medicamentos aunque sean genéricas
+– Los posts de Vasculitis ANCA deben incluir siempre referencia a myancavasculitis.com/es
+…" style="width:100%;resize:vertical;line-height:1.6;font-size:13px;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="savePermanentInstructions()">💾 Guardar instrucciones</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearPermanentInstructions()">🗑 Borrar todo</button>
+        <span id="learn-save-msg" style="font-size:12px;color:#059669;font-weight:600;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen automático del feedback -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">🔄 Resumir feedback del mes</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">Pega aquí el feedback y notas de este mes (puedes copiarlos de la batería generada). La IA los analiza y extrae aprendizajes concretos que puedes añadir a las instrucciones permanentes.</p>
+      <textarea id="learn-feedback-raw" rows="6" placeholder="Pega aquí el feedback del mes: notas por post, comentarios del cliente, qué funcionó y qué no…" style="width:100%;resize:vertical;font-size:13px;line-height:1.6;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="summarizeFeedback()" id="btn-summarize">✦ Resumir y extraer aprendizajes</button>
+        <div class="loading" id="summarize-loading"><div class="spinner"></div> Analizando feedback...</div>
+      </div>
+      <div id="learn-summary-result" style="margin-top:16px;"></div>
+    </div>
+  </div>
+
+  <!-- Historial de aprendizaje -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">🗂 Historial de aprendizajes guardados</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:14px;">Cada vez que guardas instrucciones, se registra una versión. Puedes recuperar cualquier versión anterior.</p>
+      <div id="learn-history-list"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+<footer><span>Science Hub by CSL · Content Hub · Cícero Comunicación</span></footer>
+
+<script>
+// ── Web Search ────────────────────────────────
+const SEARCH_API_URL="https://cicero-hub-backend.onrender.com/api/search";
+
+async function buscarURLsRelevantes(tema,area=''){
+  try{
+    const query=area?`${tema} ${area} noticias recientes`:`${tema} noticias recientes`;
+    console.log('🔍 Buscando URLs:',query);
+    const response=await fetch(SEARCH_API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:query,max_results:3})
+    });
+    if(!response.ok){console.warn('⚠️ Búsqueda fallida');return null;}
+    const data=await response.json();
+    if(data.results&&data.results.length>0){
+      console.log('✅ URLs encontradas:',data.results.length);
+      return{
+        resumen:data.answer||'',
+        urls:data.results.map(r=>r.url),
+        fuentes:data.results.map(r=>({
+          titulo:r.title,
+          url:r.url,
+          extracto:r.content?r.content.substring(0,150):''
+        }))
+      };
+    }
+    return null;
+  }catch(error){console.error('❌ Error en búsqueda:',error);return null;}
+}
+
+function formatearFuentesParaPrompt(fuentes){
+  if(!fuentes||fuentes.length===0)return'';
+  return`\n\nFUENTES ACTUALES (incluye URLs relevantes):\n${fuentes.map((f,i)=>`${i+1}. ${f.titulo}\n   ${f.url}\n   ${f.extracto}...`).join('\n\n')}`;
+}
+
+// ── EXTRACT BATTERY FEEDBACK ──────────────────
+function extractBatteryFeedback(prefix){
+  const cards=document.querySelectorAll(`#${prefix}-results .post-card`);
+  if(!cards.length){
+    const msg=document.getElementById('extracted-feedback-msg');
+    if(msg)msg.textContent=`No hay batería generada en ${prefix==='x'?'X':prefix==='ig'?'Instagram':'Copys especiales'}. Genera primero una batería.`;
+    document.getElementById('extracted-feedback-result').style.display='none';
+    return;
+  }
+  const feedbacks=[];
+  cards.forEach((c,i)=>{
+    const fbNote=c.querySelector('.post-fb-note');
+    const gfbNote=c.querySelector('.post-fb-note'); // also general
+    if(fbNote&&fbNote.textContent.trim()){
+      feedbacks.push(`Post ${i+1}: ${fbNote.textContent.trim()}`);
+    }
+  });
+  // Also grab general feedback if any
+  const gfb=gfbState[prefix];
+  if(gfb.text){feedbacks.unshift(`Feedback general: ${gfb.text}`);}
+
+  const el=document.getElementById('extracted-feedback-result');
+  const msg=document.getElementById('extracted-feedback-msg');
+  if(!feedbacks.length){
+    el.style.display='none';
+    if(msg)msg.textContent='No hay notas de feedback en esta batería todavía.';
+    return;
+  }
+  const text=feedbacks.join('\n\n');
+  el.textContent=text;
+  el.style.display='block';
+  if(msg)msg.innerHTML=`<span style="color:#059669;font-weight:600;">${feedbacks.length} nota${feedbacks.length>1?'s':''} extraída${feedbacks.length>1?'s':''}.</span> Cópialo en el cajón "Resumir feedback del mes" y pulsa ✦ Resumir.
+  <button onclick="copyExtractedFeedback()" style="margin-left:10px;background:#eee;color:#555;border:1px solid #ddd;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📋 Copiar</button>
+  <button onclick="pasteExtractedFeedback()" style="margin-left:4px;background:var(--red);color:white;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Pegar en cajón</button>`;
+}
+function copyExtractedFeedback(){
+  const el=document.getElementById('extracted-feedback-result');
+  if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{alert('Feedback copiado al portapapeles.');});
+}
+function pasteExtractedFeedback(){
+  const el=document.getElementById('extracted-feedback-result');
+  const ta=document.getElementById('learn-feedback-raw');
+  if(!el||!ta)return;
+  ta.value=el.textContent;
+  // Scroll to the summarize section
+  document.getElementById('learn-feedback-raw').scrollIntoView({behavior:'smooth',block:'center'});
+}
+const LEARN_KEY='csl_vifor_learning_v1';
+const LEARN_HIST_KEY='csl_vifor_learning_history_v1';
+
+let permanentInstructions='';
+let learningHistory=[];
+
+function loadLearning(){
+  try{permanentInstructions=localStorage.getItem(LEARN_KEY)||'';}catch(_){permanentInstructions='';}
+  try{learningHistory=JSON.parse(localStorage.getItem(LEARN_HIST_KEY)||'[]');}catch(_){learningHistory=[];}
+  const ta=document.getElementById('learn-permanent');
+  if(ta)ta.value=permanentInstructions;
+  renderLearnHistory();
+  if(permanentInstructions){
+    const ts=document.getElementById('learn-saved-ts');
+    if(ts)ts.textContent=learningHistory[0]?'Última actualización: '+learningHistory[0].date:'';
+  }
+}
+
+function getPermanentInstructions(){
+  // Always read from localStorage in case it changed
+  try{return localStorage.getItem(LEARN_KEY)||'';}catch(_){return '';}
+}
+
+function savePermanentInstructions(){
+  const val=document.getElementById('learn-permanent')?.value||'';
+  permanentInstructions=val;
+  localStorage.setItem(LEARN_KEY,val);
+  // Add to history
+  const entry={date:new Date().toLocaleString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),text:val};
+  learningHistory=[entry,...learningHistory].slice(0,10);
+  localStorage.setItem(LEARN_HIST_KEY,JSON.stringify(learningHistory));
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='✓ Guardado correctamente';setTimeout(()=>msg.textContent='',3000);}
+  const ts=document.getElementById('learn-saved-ts');
+  if(ts)ts.textContent='Última actualización: '+entry.date;
+  renderLearnHistory();
+}
+
+function clearPermanentInstructions(){
+  if(!confirm('¿Borrar todas las instrucciones permanentes?'))return;
+  permanentInstructions='';
+  localStorage.removeItem(LEARN_KEY);
+  const ta=document.getElementById('learn-permanent');
+  if(ta)ta.value='';
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='Instrucciones borradas';setTimeout(()=>msg.textContent='',2500);}
+}
+
+function renderLearnHistory(){
+  const el=document.getElementById('learn-history-list');
+  if(!el)return;
+  if(!learningHistory.length){
+    el.innerHTML=`<p style="font-size:12px;color:#aaa;font-style:italic;">Aún no hay versiones guardadas.</p>`;
+    return;
+  }
+  el.innerHTML=learningHistory.map((h,i)=>`
+    <div class="learn-history-item">
+      <div style="flex:1;">
+        <div class="learn-history-meta">${h.date}</div>
+        <div class="learn-history-preview">${h.text.slice(0,180)}${h.text.length>180?'…':''}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-ghost btn-sm" onclick="restoreLearnHistory(${i})">↩ Recuperar</button>
+        <button class="btn btn-ghost btn-sm" style="color:#dc2626;" onclick="deleteLearnHistory(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function restoreLearnHistory(i){
+  const entry=learningHistory[i];if(!entry)return;
+  permanentInstructions=entry.text;
+  const ta=document.getElementById('learn-permanent');
+  if(ta)ta.value=entry.text;
+  localStorage.setItem(LEARN_KEY,entry.text);
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='✓ Versión recuperada';setTimeout(()=>msg.textContent='',2500);}
+}
+
+function deleteLearnHistory(i){
+  learningHistory.splice(i,1);
+  localStorage.setItem(LEARN_HIST_KEY,JSON.stringify(learningHistory));
+  renderLearnHistory();
+}
+
+async function summarizeFeedback(){
+  const raw=document.getElementById('learn-feedback-raw')?.value?.trim();
+  if(!raw)return alert('Pega el feedback del mes antes de resumir.');
+  const btn=document.getElementById('btn-summarize');
+  const loading=document.getElementById('summarize-loading');
+  if(btn)btn.disabled=true;
+  if(loading)loading.classList.add('show');
+  document.getElementById('learn-summary-result').innerHTML='';
+
+  const prompt=`Analiza el siguiente feedback y notas de revisión de una batería de contenidos de redes sociales para Science Hub by CSL (CSL Vifor + CSL Behring).
+
+FEEDBACK DEL MES:
+${raw}
+
+Extrae entre 5 y 8 aprendizajes concretos y accionables que deberían aplicarse en futuras baterías. Cada aprendizaje debe ser:
+- Una instrucción clara y directa (no una observación vaga)
+- Aplicable a la generación futura de copies
+- Redactado en infinitivo o como regla ("Evitar…", "Incluir siempre…", "Priorizar…", "Cuando el tema sea X, usar…")
+
+Responde ÚNICAMENTE con JSON sin markdown:
+{"aprendizajes":["...","...","..."]}`;
+
+  try{
+    const res=await fetch('https://cicero-hub-backend.onrender.com/api/claude',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error)throw new Error(data.error.message);
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim());
+    const points=parsed.aprendizajes||[];
+
+    const resultEl=document.getElementById('learn-summary-result');
+    resultEl.innerHTML=`<div class="learn-summary-card">
+      <div class="learn-summary-title">✅ Aprendizajes extraídos (${points.length})</div>
+      ${points.map((p,i)=>`<div class="learn-point"><strong>${i+1}.</strong> ${p}</div>`).join('')}
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="addLearnPoints(${JSON.stringify(points).replace(/"/g,'&quot;')})">➕ Añadir a instrucciones permanentes</button>
+        <button class="btn btn-ghost btn-sm" onclick="replaceLearnPoints(${JSON.stringify(points).replace(/"/g,'&quot;')})">↩ Reemplazar instrucciones permanentes</button>
+      </div>
+    </div>`;
+  }catch(e){
+    document.getElementById('learn-summary-result').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;
+  }
+  if(btn)btn.disabled=false;
+  if(loading)loading.classList.remove('show');
+}
+
+function addLearnPoints(points){
+  const ta=document.getElementById('learn-permanent');
+  if(!ta)return;
+  const current=ta.value.trim();
+  const newText=(current?current+'\n\n':'')+'— Aprendizajes del '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'})+':\n'+points.map(p=>`– ${p}`).join('\n');
+  ta.value=newText;
+  permanentInstructions=newText;
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='Aprendizajes añadidos — recuerda guardar 💾';setTimeout(()=>msg.textContent='',4000);}
+}
+
+function replaceLearnPoints(points){
+  if(!confirm('¿Reemplazar las instrucciones permanentes con estos aprendizajes?'))return;
+  const ta=document.getElementById('learn-permanent');
+  if(!ta)return;
+  const newText='— Aprendizajes del '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'})+':\n'+points.map(p=>`– ${p}`).join('\n');
+  ta.value=newText;
+  permanentInstructions=newText;
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='Instrucciones reemplazadas — recuerda guardar 💾';setTimeout(()=>msg.textContent='',4000);}
+}
+
+// ── SYSTEM PROMPT ─────────────────────────────
+const SYS=`Eres experto en comunicación de salud para Science Hub by CSL (CSL Vifor + CSL Behring), gestionado por Cícero Comunicación.
+
+ÁREAS TERAPÉUTICAS: nefrología/ERC, vasculitis ANCA, déficit de hierro/anemia ferropénica, diálisis/trasplante, Patient Blood Management (PBM), síndrome cardiorrenal/IC, hiperpotasemia, hematología/hemofilia, inmunología/inmunodeficiencias, enfermedades raras/angioedema hereditario.
+
+WEBS DE REFERENCIA: nefralia.es, myancavasculitis.com/es, fundacionrenal.com, mapbm.org, cslvifor.com/es.
+
+REGLAS OBLIGATORIAS SIEMPRE:
+1. Genera copies COMPLETOS, listos para publicar, con la extensión adecuada al canal (no esquemas ni ideas).
+2. Usa emojis de forma estratégica: 2-4 por post en Instagram/Facebook, 1-2 en X. Siempre al inicio de párrafo o en puntos clave.
+3. Incluye CTA concreto y variado: "¿Quieres saber más? 👉 No te lo pierdas en este carrusel", "Desliza → para descubrirlo", "¿Te identificas? Cuéntanos en los comentarios 💬", "Guarda este post para consultarlo cuando lo necesites 🔖", "¿Lo sabías? Etiqueta a alguien que debería leer esto", etc.
+4. Tono divulgativo, cercano, neutro. Directo al paciente o al profesional sanitario según contexto.
+5. Sin claims terapéuticos sin evidencia. Sin nombres de medicamentos. Información basada en evidencia.
+6. 3-5 hashtags por post. Siempre #ScienceHubByCSL. Añadir hashtags del área terapéutica.
+7. Cuando hay datos o estadísticas, incluir la fuente (entre paréntesis o como texto al final).
+8. Nunca generar posts idénticos entre sí. Variar estructura de inicio, tipo de CTA y tono.
+9. Solo el contenido solicitado. Sin introducciones ni metacomentarios.
+
+LONGITUDES OBJETIVO:
+- X/Twitter: 200-270 caracteres (sin hashtags). Impacto inmediato, pregunta retórica o dato sorprendente.
+- Instagram/Facebook: 300-550 caracteres por versión lingüística. Estructura: hook → desarrollo → CTA → hashtags.
+- LinkedIn: 600-900 caracteres. Más formal, datos, conclusión reflexiva.
+- Copys especiales: adaptar a canal indicado.`;
+
+// ── STATE ─────────────────────────────────────
+const state={notes:{x:[],ig:[],sp:[]}};
+// Per-panel feedback state
+const gfbState={x:{val:'',text:'',editing:false},ig:{val:'',text:'',editing:false},sp:{val:'',text:'',editing:false}};
+// Per-post feedback: {prefix_i: {text, editing}}
+const postFb={};
+
+// ── PANEL SWITCH ──────────────────────────────
+function switchPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── CHECKBOX VISUAL ───────────────────────────
+document.addEventListener('change',e=>{
+  if(e.target.type==='checkbox') e.target.closest('.check-item')?.classList.toggle('checked',e.target.checked);
+});
+function getChecked(cid){
+  return [...document.querySelectorAll(`#${cid} input[type=checkbox]:checked`)].map(c=>c.value).join(', ');
+}
+
+// ── NOTES ─────────────────────────────────────
+const FILE_ICONS={pdf:'📄',doc:'📝',docx:'📝',ppt:'📊',pptx:'📊',xls:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',jpeg:'🖼',txt:'📃',default:'📎'};
+
+function addNote(prefix){
+  const id=Date.now();
+  state.notes[prefix].push({id,text:'',files:[],fileTexts:{},ts:new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short'})});
+  renderNotes(prefix);
+  setTimeout(()=>{const ta=document.getElementById(`nta-${id}`);if(ta)ta.focus();},50);
+}
+
+function renderNotes(prefix){
+  const el=document.getElementById(prefix+'-notes-grid');
+  if(!el)return;
+  if(!state.notes[prefix].length){
+    el.innerHTML=`<div style="font-size:11px;color:#c0a040;font-style:italic;">Aún no hay apuntes. Pulsa "+ Nuevo apunte" para empezar.</div>`;
+    return;
+  }
+  el.innerHTML=state.notes[prefix].map(n=>{
+    const chips=n.files.map((f,fi)=>{
+      const ext=f.name.split('.').pop().toLowerCase();
+      const ico=FILE_ICONS[ext]||FILE_ICONS.default;
+      return `<span class="note-file-chip">${ico} ${f.name.length>18?f.name.slice(0,16)+'…':f.name}<button onclick="removeNoteFile('${prefix}',${n.id},${fi})" title="Quitar">×</button></span>`;
+    }).join('');
+    return `<div class="note-card">
+      <textarea id="nta-${n.id}" placeholder="Escribe tu apunte: día mundial, noticia, evento, instrucción, idea…" oninput="updateNote('${prefix}',${n.id},this.value)">${n.text}</textarea>
+      <div class="note-attach-row">
+        <input type="file" id="nf-${n.id}" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.txt" style="display:none" onchange="addNoteFiles(this,'${prefix}',${n.id})">
+        <button class="note-attach-btn" onclick="document.getElementById('nf-${n.id}').click()">📎 Adjuntar archivo</button>
+        ${chips}
+      </div>
+      <div class="note-ts">${n.ts}</div>
+      <button class="note-del" onclick="deleteNote('${prefix}',${n.id})" title="Eliminar apunte">×</button>
+    </div>`;
+  }).join('');
+}
+
+function updateNote(prefix,id,val){const n=state.notes[prefix].find(n=>n.id===id);if(n)n.text=val;}
+function deleteNote(prefix,id){state.notes[prefix]=state.notes[prefix].filter(n=>n.id!==id);renderNotes(prefix);}
+
+async function addNoteFiles(input,prefix,noteId){
+  const n=state.notes[prefix].find(n=>n.id===noteId);
+  if(!n)return;
+  for(const f of [...input.files]){
+    if(n.files.find(x=>x.name===f.name))continue;
+    n.files.push(f);
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(ext==='txt'){
+      const r=new FileReader();
+      r.onload=ev=>{n.fileTexts[f.name]=ev.target.result.slice(0,3000);};
+      r.readAsText(f);
+    } else if(ext==='xlsx'||ext==='xls'){
+      // Read Excel and extract text
+      try{
+        const buf=await f.arrayBuffer();
+        const wb=XLSX.read(buf,{type:'array'});
+        let txt='';
+        wb.SheetNames.forEach(sn=>{
+          const ws=wb.Sheets[sn];
+          const csv=XLSX.utils.sheet_to_csv(ws);
+          txt+=`[Hoja: ${sn}]\n${csv.slice(0,2000)}\n`;
+        });
+        n.fileTexts[f.name]=txt.slice(0,4000);
+      }catch(e){n.fileTexts[f.name]='[No se pudo leer el Excel]';}
+    }
+  }
+  input.value='';
+  renderNotes(prefix);
+}
+
+function removeNoteFile(prefix,noteId,fi){
+  const n=state.notes[prefix].find(n=>n.id===noteId);
+  if(!n)return;
+  const name=n.files[fi]?.name;
+  n.files.splice(fi,1);
+  if(name)delete n.fileTexts[name];
+  renderNotes(prefix);
+}
+
+function buildNotesContext(prefix){
+  const notes=state.notes[prefix].filter(n=>n.text.trim()||n.files.length);
+  if(!notes.length)return '';
+  return '\n\nAPUNTES DEL MES (ten en cuenta todo esto al planificar y generar los copies):\n'+notes.map(n=>{
+    let s=n.text.trim()?`- ${n.text.trim()}`:'';
+    if(n.files.length)s+=(s?' ':'')+`[Archivos adjuntos: ${n.files.map(f=>f.name).join(', ')}]`;
+    const txtContent=Object.entries(n.fileTexts).map(([nm,t])=>`\n  Contenido extraído de ${nm}:\n  ${t.slice(0,2000)}`).join('');
+    return s+txtContent;
+  }).join('\n');
+}
+
+['x','ig','sp'].forEach(p=>renderNotes(p));
+loadLearning();
+
+// ── CLAUDE API ────────────────────────────────
+async function callClaude(prompt,maxTokens=5000){
+  const r=await fetch('https://cicero-hub-backend.onrender.com/api/claude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system:SYS,messages:[{role:'user',content:prompt}]})
+  });
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d.content[0].text;
+}
+
+// ── GENERATE X ────────────────────────────────
+async function generateX(extraInstructions=''){
+  const mes=document.getElementById('x-mes').value;
+  const num=document.getElementById('x-num').value;
+  if(!mes)return alert('Selecciona el mes.');
+  const areas=getChecked('x-areas');
+  if(!areas)return alert('Selecciona al menos un área terapéutica.');
+  const notesCtx=buildNotesContext('x');
+  const learnCtx=getPermanentInstructions();
+
+  // 🌐 BÚSQUEDA WEB AUTOMÁTICA
+  let fuentesContext='';
+  if(areas){
+    const busqueda=await buscarURLsRelevantes(mes+' '+areas,'CSL Vifor');
+    if(busqueda){
+      fuentesContext=formatearFuentesParaPrompt(busqueda.fuentes);
+    }
+  }
+
+  setLoading('x',true);
+  document.getElementById('x-results').innerHTML='';
+
+  const prompt=`Genera exactamente ${num} posts COMPLETOS Y PUBLICABLES para X (Twitter) de Science Hub by CSL para ${mes}.
+ÁREAS A CUBRIR (distribuye equitativamente): ${areas}${notesCtx}${fuentesContext}
+${learnCtx?'\nINSTRUCCIONES APRENDIDAS DEL CLIENTE (aplica siempre, son prioritarias):\n'+learnCtx:''}
+${extraInstructions?'\nFEEDBACK DEL EQUIPO (aplica estrictamente): '+extraInstructions:''}
+
+INSTRUCCIONES ESPECÍFICAS X:
+- Idioma: español de España exclusivamente.
+- 200-270 caracteres por copy (SIN contar hashtags). Impacto inmediato.
+- Alterna tipos de inicio: pregunta retórica, dato impactante con emoji, afirmación provocadora, cifra sorprendente.
+- NO repetir área en posts consecutivos.
+- Incluir fuente web cuando hay datos (texto breve entre paréntesis o como URL al final).
+- 3-4 hashtags por post. Siempre #ScienceHubByCSL + hashtags del área.
+- CTA variado al final: "¿Lo sabías?", "Descúbrelo en el enlace 👇", "¿Cuál es tu experiencia? Cuéntanos 💬", etc.
+
+FORMATO EXACTO de respuesta (sin texto adicional fuera de este formato):
+POST 1 | [Área] | [Tipo: dato/pregunta/reflexión/consejo]
+[Copy completo con emojis y hashtags]
+Fuente: [URL o dato si aplica, si no, omitir esta línea]
+---`;
+
+  try{
+    const raw=await callClaude(prompt,6000);
+    renderXPosts(raw,mes);
+  }catch(e){
+    document.getElementById('x-results').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;
+  }finally{setLoading('x',false);}
+}
+
+function renderXPosts(raw,mes){
+  const cont=document.getElementById('x-results');
+  const blocks=raw.split('---').map(s=>s.trim()).filter(s=>s.length>15);
+  if(!blocks.length){cont.innerHTML=`<div class="error-msg">No se pudo parsear la respuesta. Inténtalo de nuevo.</div>`;return;}
+
+  gfbState.x={val:'',text:'',editing:false};
+
+  let html=renderGeneralFbBox('x')+
+    `<div class="results-bar">
+      <span>${blocks.length} posts · X · ${mes}</span>
+      <button class="btn btn-ghost btn-sm" onclick="copyAllPosts('x')">📋 Copiar todos</button>
+      <button class="btn btn-green btn-sm" onclick="exportExcel('x','${mes}')">⬇ Excel</button>
+    </div>`;
+
+  blocks.forEach((b,i)=>{
+    const lines=b.split('\n').filter(l=>l.trim());
+    const h=(lines[0]||'').split('|').map(s=>s.trim());
+    // Extract Link and Multimedia lines
+    const linkLine=lines.find(l=>l.startsWith('Link:'))||'';
+    const multLine=lines.find(l=>l.startsWith('Multimedia:'))||'';
+    const linkVal=linkLine.replace('Link:','').trim();
+    const multVal=multLine.replace('Multimedia:','').trim();
+    // Body = everything except header, Link and Multimedia lines
+    const body=lines.slice(1).filter(l=>!l.startsWith('Link:')&&!l.startsWith('Multimedia:')).join('\n');
+    const taId=`x-ta-${i}`;
+    const cId=`x-c-${i}`;
+    const fbKey=`x_${i}`;
+    if(!postFb[fbKey])postFb[fbKey]={text:'',editing:false};
+    html+=`<div class="post-card" id="pc-${fbKey}">
+      <div class="post-header">
+        <span class="post-num">${h[0]||'Post '+(i+1)}</span>
+        <div class="post-meta">
+          ${h[1]?`<span class="tag tag-date">📅 ${h[1]}</span>`:''}
+          ${h[2]?`<span class="tag tag-area">${h[2]}</span>`:''}
+        </div>
+      </div>
+      <div class="post-body">
+        <textarea id="${taId}" class="post-ta" rows="4" oninput="updateCC(this,'${cId}')">${body}</textarea>
+        <div id="${cId}" class="char-c">${body.length} caracteres</div>
+        ${linkVal&&linkVal!=='—'?`<div style="font-size:11px;color:#1a6fc4;margin-top:5px;">🔗 <a href="${linkVal}" target="_blank" style="color:#1a6fc4;">${linkVal.substring(0,60)}…</a></div>`:''}
+        ${multVal&&multVal!=='—'?`<div style="font-size:11px;color:#5A67D8;margin-top:3px;">🎨 ${multVal}</div>`:''}
+      </div>
+      <div class="post-footer">
+        <span></span>
+        <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${taId}')">📋 Copiar</button>
+      </div>
+      ${renderPostFbSection(fbKey,'x')}
+    </div>`;
+  });
+  html+=`<div id="x-feedback-box"></div>`;
+  // Store parsed data for export
+  window._xBlocks=blocks.map((b,i)=>{
+    const lines=b.split('\n').filter(l=>l.trim());
+    const h=(lines[0]||'').split('|').map(s=>s.trim());
+    const linkVal=(lines.find(l=>l.startsWith('Link:'))||'').replace('Link:','').trim();
+    const multVal=(lines.find(l=>l.startsWith('Multimedia:'))||'').replace('Multimedia:','').trim();
+    const body=lines.slice(1).filter(l=>!l.startsWith('Link:')&&!l.startsWith('Multimedia:')).join('\n');
+    return {header:h,body,link:linkVal,multimedia:multVal};
+  });
+  cont.innerHTML=html;
+  bindGeneralFb('x',()=>generateX);
+}
+
+// ── GENERATE IG ───────────────────────────────
+async function generateIG(extraInstructions=''){
+  const mes=document.getElementById('ig-mes').value;
+  const num=document.getElementById('ig-num').value;
+  if(!mes)return alert('Selecciona el mes.');
+  const areas=getChecked('ig-areas');
+  if(!areas)return alert('Selecciona al menos un área.');
+  const fmts=[...document.querySelectorAll('#panel-ig .check-item input:checked')]
+    .filter(c=>['Reel','Carrusel','Post estático','Story'].includes(c.value))
+    .map(c=>c.value).join(', ')||'Reel, Carrusel, Post';
+  const series=[...document.querySelectorAll('#panel-ig .check-item input:checked')]
+    .filter(c=>c.value.startsWith('#')||['Testimonio de paciente','Receta saludable renal','Visita al especialista / consejos prácticos'].includes(c.value))
+    .map(c=>c.value).join(', ');
+  const notesCtx=buildNotesContext('ig');
+  const learnCtx=getPermanentInstructions();
+
+  // 🌐 BÚSQUEDA WEB AUTOMÁTICA
+  let fuentesContext='';
+  if(areas){
+    const busqueda=await buscarURLsRelevantes(mes+' '+areas,'CSL Vifor');
+    if(busqueda){
+      fuentesContext=formatearFuentesParaPrompt(busqueda.fuentes);
+    }
+  }
+
+  setLoading('ig',true);
+  document.getElementById('ig-results').innerHTML='';
+
+  const prompt=`Genera exactamente ${num} contenidos COMPLETOS Y PUBLICABLES de Instagram para Science Hub by CSL para ${mes}.
+ÁREAS: ${areas}
+FORMATOS A DISTRIBUIR: ${fmts}
+${series?`SERIES RECURRENTES A INCLUIR: ${series}`:''}${notesCtx}${fuentesContext}
+${learnCtx?'\nINSTRUCCIONES APRENDIDAS DEL CLIENTE (aplica siempre, son prioritarias):\n'+learnCtx:''}
+${extraInstructions?'\nFEEDBACK DEL EQUIPO (aplica estrictamente): '+extraInstructions:''}
+
+INSTRUCCIONES ESPECÍFICAS INSTAGRAM:
+- Genera SIEMPRE dos versiones por contenido: primero 🇪🇸 español de España, luego 🇵🇹 portugués de Portugal (no de Brasil). Ambas versiones completas y adaptadas naturalmente, NO traducciones literales.
+- Longitud: 400-500 caracteres por versión (sin hashtags). Nunca por debajo de 400.
+- Estructura: Hook potente (primera línea impactante) → desarrollo informativo (2-3 frases) → CTA específico al formato → hashtags.
+- CTA adaptado al formato: Carrusel → "Desliza → para descubrirlo todo 👉" / "No te pierdas las claves →"; Reel → "▶️ Dale al play" / "¿Te ha sorprendido? Cuéntanos 👇"; Post → "Guarda este post 🔖" / "Etiqueta a alguien que debería leerlo".
+- Distribuir contenidos en L-X-V, sin sábado ni domingo.
+- 4-5 hashtags en español, 4-5 hashtags equivalentes en portugués.
+- Siempre #ScienceHubByCSL en ambas versiones.
+- Alterna áreas, NO repetir en posts consecutivos.
+- Incluye sugerencia de creatividad para Canva en cada post.
+- Incluir link/fuente cuando hay datos.
+
+FORMATO EXACTO de respuesta:
+CONTENIDO 1 | [Día semana, DD-mes] | [Formato] | [Área/Temática]
+🇪🇸 ES:
+[Copy español completo con emojis y CTA]
+[Hashtags ES]
+🇵🇹 PT:
+[Copy portugués completo con emojis y CTA]
+[Hashtags PT]
+Link: [URL si aplica, si no escribir "—"]
+Multimedia: [Sugerencia de creatividad para Canva]
+---`;
+
+  try{
+    const raw=await callClaude(prompt,8000);
+    renderIGPosts(raw,mes);
+  }catch(e){
+    document.getElementById('ig-results').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;
+  }finally{setLoading('ig',false);}
+}
+
+function renderIGPosts(raw,mes){
+  const cont=document.getElementById('ig-results');
+  const blocks=raw.split('---').map(s=>s.trim()).filter(s=>s.length>15);
+  if(!blocks.length){cont.innerHTML=`<div class="error-msg">No se pudo parsear. Inténtalo de nuevo.</div>`;return;}
+
+  gfbState.ig={val:'',text:'',editing:false};
+  window._igBlocks=[];
+
+  let html=renderGeneralFbBox('ig')+
+    `<div class="results-bar">
+      <span>${blocks.length} contenidos · Instagram · ${mes}</span>
+      <button class="btn btn-ghost btn-sm" onclick="copyAllPosts('ig')">📋 Copiar todos</button>
+      <button class="btn btn-green btn-sm" onclick="exportExcel('ig','${mes}')">⬇ Excel</button>
+    </div>`;
+
+  blocks.forEach((b,i)=>{
+    const lines=b.split('\n').filter(l=>l.trim());
+    const h=(lines[0]||'').split('|').map(s=>s.trim());
+    const body=lines.slice(1).join('\n');
+    const linkLine=(lines.find(l=>l.startsWith('Link:'))||'').replace('Link:','').trim();
+    const multLine=(lines.find(l=>l.startsWith('Multimedia:'))||'').replace('Multimedia:','').trim();
+    const ptI=body.indexOf('🇵🇹 PT:');
+    const esRaw=ptI>-1?body.slice(0,ptI).replace('🇪🇸 ES:','').trim():body.replace('🇪🇸 ES:','').trim();
+    const ptRaw=ptI>-1?body.slice(ptI).replace('🇵🇹 PT:','').trim():'';
+    // Strip Link/Multimedia from PT block if present
+    const pt=ptRaw.replace(/Link:.*(\n|$)/,'').replace(/Multimedia:.*(\n|$)/,'').trim();
+    const es=esRaw.replace(/Link:.*(\n|$)/,'').replace(/Multimedia:.*(\n|$)/,'').trim();
+    const eId=`ig-es-${i}`,pId=`ig-pt-${i}`;
+    const fbKey=`ig_${i}`;
+    if(!postFb[fbKey])postFb[fbKey]={text:'',editing:false};
+    window._igBlocks.push({header:h,es,pt,link:linkLine,multimedia:multLine});
+    html+=`<div class="post-card" id="pc-${fbKey}">
+      <div class="post-header">
+        <span class="post-num">${h[0]||'Contenido '+(i+1)}</span>
+        <div class="post-meta">
+          ${h[1]?`<span class="tag tag-date">📅 ${h[1]}</span>`:''}
+          ${h[2]?`<span class="tag tag-format">${h[2]}</span>`:''}
+          ${h[3]?`<span class="tag tag-area">${h[3]}</span>`:''}
+        </div>
+      </div>
+      <div class="post-body">
+        <div class="lang-lbl">🇪🇸 Español</div>
+        <textarea id="${eId}" class="post-ta" rows="7">${es}</textarea>
+        <hr class="lang-div">
+        <div class="lang-lbl">🇵🇹 Português (Portugal)</div>
+        <textarea id="${pId}" class="post-ta" rows="7">${pt}</textarea>
+        ${linkLine&&linkLine!=='—'?`<div style="font-size:11px;color:#1a6fc4;margin-top:6px;">🔗 <a href="${linkLine}" target="_blank" style="color:#1a6fc4;">${linkLine.substring(0,60)}${linkLine.length>60?'…':''}</a></div>`:''}
+        ${multLine&&multLine!=='—'?`<div style="font-size:11px;color:#5A67D8;margin-top:3px;">🎨 ${multLine}</div>`:''}
+      </div>
+      <div class="post-footer">
+        <span></span>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-copy btn-sm" onclick="copyBoth('${eId}','${pId}',this)">📋 Copiar ambos</button>
+          <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${eId}')">Solo ES</button>
+          <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${pId}')">Solo PT</button>
+        </div>
+      </div>
+      ${renderPostFbSection(fbKey,'ig')}
+    </div>`;
+  });
+  html+=`<div id="ig-feedback-box"></div>`;
+  cont.innerHTML=html;
+  bindGeneralFb('ig',()=>generateIG);
+}
+
+// ── GENERATE ESPECIAL ─────────────────────────
+async function generateSpecial(extraInstructions=''){
+  const brief=document.getElementById('sp-brief').value.trim();
+  if(!brief)return alert('Escribe el briefing antes de generar.');
+  const canal=document.getElementById('sp-canal').value;
+  const num=parseInt(document.getElementById('sp-num').value);
+  const idioma=document.getElementById('sp-idioma').value;
+  const esYpt=idioma.includes('Portugués');
+  const notesCtx=buildNotesContext('sp');
+
+  setLoading('sp',true);
+  document.getElementById('sp-results').innerHTML='';
+
+  const charLimits={Instagram:'300-550',  'X (Twitter)':'200-270', LinkedIn:'600-900', Facebook:'300-550'};
+  const lim=charLimits[canal]||'300-550';
+
+  const prompt=`Genera exactamente ${num} copys COMPLETOS Y PUBLICABLES para ${canal} de Science Hub by CSL.
+BRIEFING: ${brief}${notesCtx}
+${extraInstructions?'\nFEEDBACK DEL EQUIPO (aplica estrictamente): '+extraInstructions:''}
+IDIOMA: ${idioma}
+${esYpt?'Genera dos versiones por copy: primero 🇪🇸 español de España, luego 🇵🇹 portugués de Portugal (no de Brasil). Ambas versiones deben ser copies completos, adaptados naturalmente, NO traducciones literales.':''}
+
+INSTRUCCIONES:
+- Copies completos listos para publicar, con emojis, CTA y hashtags. NO esquemas.
+- Longitud: ${lim} caracteres por versión (sin hashtags).
+- CTA concreto y adaptado al canal: ${canal==='X (Twitter)'?'"¿Lo sabías? 👇", "Descúbrelo aquí →", "¿Tu experiencia? Cuéntanos 💬"':'"Desliza → para saber más", "Guarda este post 🔖", "¿Te ha sorprendido? Cuéntanos 👇"'}
+- 3-5 hashtags. Siempre #ScienceHubByCSL.
+- Tono divulgativo, cercano, sin claims terapéuticos sin evidencia. Sin nombres de medicamentos.
+
+FORMATO EXACTO:
+COPY 1 | [Formato/tipo sugerido]
+${esYpt?'🇪🇸 ES:\n[Copy español con emojis, CTA y hashtags]\n\n🇵🇹 PT:\n[Copy portugués con emojis, CTA y hashtags]':'[Copy con emojis, CTA y hashtags]'}
+Fuente: [si aplica]
+---`;
+
+  try{
+    const raw=await callClaude(prompt,6000);
+    renderSpecialPosts(raw,canal,idioma);
+  }catch(e){
+    document.getElementById('sp-results').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;
+  }finally{setLoading('sp',false);}
+}
+
+function renderSpecialPosts(raw,canal,idioma){
+  const cont=document.getElementById('sp-results');
+  const blocks=raw.split('---').map(s=>s.trim()).filter(s=>s.length>15);
+  if(!blocks.length){cont.innerHTML=`<div class="error-msg">No se pudo parsear. Inténtalo de nuevo.</div>`;return;}
+  const esYpt=idioma.includes('Portugués');
+
+  gfbState.sp={val:'',text:'',editing:false};
+
+  let html=renderGeneralFbBox('sp')+
+    `<div class="results-bar">
+      <span>${blocks.length} copys · ${canal}</span>
+      <button class="btn btn-ghost btn-sm" onclick="copyAllPosts('sp')">📋 Copiar todos</button>
+      <button class="btn btn-green btn-sm" onclick="exportExcelSp('${canal}')">⬇ Excel</button>
+    </div>`;
+
+  blocks.forEach((b,i)=>{
+    const lines=b.split('\n').filter(l=>l.trim());
+    const h=(lines[0]||'').split('|').map(s=>s.trim());
+    const body=lines.slice(1).join('\n');
+    const fbKey=`sp_${i}`;
+    if(!postFb[fbKey])postFb[fbKey]={text:'',editing:false};
+
+    if(esYpt){
+      const ptI=body.indexOf('🇵🇹 PT:');
+      const es=ptI>-1?body.slice(0,ptI).replace('🇪🇸 ES:','').trim():body.replace('🇪🇸 ES:','').trim();
+      const pt=ptI>-1?body.slice(ptI).replace('🇵🇹 PT:','').trim():'';
+      const eId=`sp-es-${i}`,pId=`sp-pt-${i}`;
+      html+=`<div class="post-card" id="pc-${fbKey}">
+        <div class="post-header"><span class="post-num">${h[0]||'Copy '+(i+1)}</span><div class="post-meta">${h[1]?`<span class="tag tag-format">${h[1]}</span>`:''}</div></div>
+        <div class="post-body">
+          <div class="lang-lbl">🇪🇸 Español</div><textarea id="${eId}" class="post-ta" rows="7">${es}</textarea>
+          <hr class="lang-div">
+          <div class="lang-lbl">🇵🇹 Português (Portugal)</div><textarea id="${pId}" class="post-ta" rows="7">${pt}</textarea>
+        </div>
+        <div class="post-footer">
+          <span></span>
+          <div style="display:flex;gap:5px;">
+            <button class="btn btn-copy btn-sm" onclick="copyBoth('${eId}','${pId}',this)">📋 Copiar ambos</button>
+            <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${eId}')">Solo ES</button>
+            <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${pId}')">Solo PT</button>
+          </div>
+        </div>
+        ${renderPostFbSection(fbKey,'sp')}
+      </div>`;
+    }else{
+      const taId=`sp-ta-${i}`;
+      html+=`<div class="post-card" id="pc-${fbKey}">
+        <div class="post-header"><span class="post-num">${h[0]||'Copy '+(i+1)}</span><div class="post-meta">${h[1]?`<span class="tag tag-format">${h[1]}</span>`:''}</div></div>
+        <div class="post-body"><textarea id="${taId}" class="post-ta" rows="7">${body}</textarea></div>
+        <div class="post-footer"><span></span><button class="btn btn-copy btn-sm" onclick="copyTa(this,'${taId}')">📋 Copiar</button></div>
+        ${renderPostFbSection(fbKey,'sp')}
+      </div>`;
+    }
+  });
+  html+=`<div id="sp-feedback-box"></div>`;
+  cont.innerHTML=html;
+  bindGeneralFb('sp',()=>generateSpecial);
+}
+
+// ── FEEDBACK POR POST ─────────────────────────
+function renderPostFbSection(fbKey,prefix){
+  const fb=postFb[fbKey]||{text:'',editing:false};
+  const [pfx,idx]=fbKey.split('_');
+  return `<div class="post-fb-section">
+    <div class="post-fb-label">💬 Nota / Feedback</div>
+    ${fb.editing
+      ?`<div>
+          <textarea id="pfb-ta-${fbKey}" rows="2" style="width:100%;border:1.5px solid #F59E0B;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB;">${fb.text}</textarea>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button onclick="savePostFb('${fbKey}')" style="background:#F59E0B;color:white;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;">Guardar</button>
+            <button onclick="cancelPostFb('${fbKey}')" style="background:#eee;color:#444;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:inherit;">Cancelar</button>
+          </div></div>`
+      :fb.text
+        ?`<div><div class="post-fb-note" onclick="editPostFb('${fbKey}')">${fb.text}</div>
+           <button class="btn-rewrite-post" id="rw-${fbKey}" onclick="rewritePost('${fbKey}','${prefix}')">↺ Rehacer con feedback</button></div>`
+        :`<div class="post-fb-empty" onclick="editPostFb('${fbKey}')">+ Añadir nota o instrucciones…</div>`
+    }
+  </div>`;
+}
+
+function editPostFb(fbKey){postFb[fbKey].editing=true;rerenderPostFb(fbKey);}
+function cancelPostFb(fbKey){postFb[fbKey].editing=false;rerenderPostFb(fbKey);}
+function savePostFb(fbKey){
+  const ta=document.getElementById(`pfb-ta-${fbKey}`);
+  if(ta)postFb[fbKey].text=ta.value;
+  postFb[fbKey].editing=false;rerenderPostFb(fbKey);
+}
+function rerenderPostFb(fbKey){
+  const [pfx]=fbKey.split('_');
+  const card=document.getElementById(`pc-${fbKey}`);
+  if(!card)return;
+  const old=card.querySelector('.post-fb-section');
+  if(old)old.outerHTML=renderPostFbSection(fbKey,pfx);
+}
+
+async function rewritePost(fbKey,prefix){
+  const btn=document.getElementById(`rw-${fbKey}`);
+  if(btn){btn.disabled=true;btn.textContent='⟳ Rehaciendo…';}
+  const fb=postFb[fbKey]?.text||'';
+  if(!fb){if(btn){btn.disabled=false;btn.textContent='↺ Rehacer con feedback';}return;}
+
+  const [pfx,idx]=fbKey.split('_');
+  // Get current copy text
+  const esTa=document.getElementById(`${pfx}-es-${idx}`)||document.getElementById(`${pfx}-ta-${idx}`)||document.getElementById(`${pfx}-ta-${idx}`);
+  const prevCopy=esTa?esTa.value:'';
+
+  const isIG=prefix==='ig';
+  const isSP=prefix==='sp';
+  const esYpt=isIG||(isSP&&document.getElementById('sp-idioma')?.value?.includes('Portugués'));
+
+  const prompt=`Reescribe este copy de Science Hub by CSL aplicando el feedback indicado.
+Copy anterior: ${prevCopy}
+FEEDBACK (aplica estrictamente): ${fb}
+${esYpt?'Genera versión española Y versión portuguesa de Portugal. Formato:\n🇪🇸 ES:\n[copy]\n🇵🇹 PT:\n[copy]':'Genera solo la versión en español de España.'}
+Mantén el canal, tono y área. Copy completo, listo para publicar, con emojis y CTA. Sin texto adicional.`;
+
+  try{
+    const raw=await callClaude(prompt,2000);
+    // Update textareas
+    if(esYpt){
+      const ptI=raw.indexOf('🇵🇹 PT:');
+      const es=ptI>-1?raw.slice(0,ptI).replace('🇪🇸 ES:','').trim():raw.replace('🇪🇸 ES:','').trim();
+      const pt=ptI>-1?raw.slice(ptI).replace('🇵🇹 PT:','').trim():'';
+      const esTaEl=document.getElementById(`${pfx}-es-${idx}`);
+      const ptTaEl=document.getElementById(`${pfx}-pt-${idx}`);
+      if(esTaEl)esTaEl.value=es;
+      if(ptTaEl)ptTaEl.value=pt;
+    }else{
+      const taEl=document.getElementById(`${pfx}-ta-${idx}`);
+      if(taEl)taEl.value=raw.trim();
+    }
+  }catch(e){console.error(e);}
+  if(btn){btn.disabled=false;btn.textContent='↺ Rehacer con feedback';}
+}
+
+// ── GENERAL FEEDBACK ─────────────────────────
+function renderGeneralFbBox(prefix){
+  const gfb=gfbState[prefix];
+  const valBtns=['Aprobado','Revisar','Rechazar'].map(v=>{
+    const cls=v==='Aprobado'?'aprobado':v==='Revisar'?'revisar':'rechazar';
+    const active=gfb.val===v;
+    return `<button class="val-btn ${active?cls:''}" onclick="setGfbVal('${prefix}','${v}')">${v==='Aprobado'?'✅':v==='Revisar'?'🔄':'❌'} ${v}</button>`;
+  }).join('');
+  return `<div class="general-fb" id="gfb-box-${prefix}">
+    <div class="general-fb-title">💬 Feedback general de la batería</div>
+    <div class="val-row">${valBtns}</div>
+    ${gfb.editing
+      ?`<textarea id="gfb-ta-${prefix}" rows="2" style="width:100%;border:1.5px solid #F59E0B;border-radius:7px;padding:7px 9px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB;">${gfb.text}</textarea>
+        <div style="display:flex;gap:7px;margin-top:6px;">
+          <button onclick="saveGfb('${prefix}')" style="background:#F59E0B;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+          <button onclick="cancelGfb('${prefix}')" style="background:#eee;color:#444;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Cancelar</button>
+        </div>`
+      :gfb.text
+        ?`<div class="post-fb-note" onclick="editGfb('${prefix}')">${gfb.text}</div>`
+        :`<div class="post-fb-empty" onclick="editGfb('${prefix}')">+ Añadir comentario general sobre esta batería…</div>`
+    }
+    ${(gfb.text||gfb.val)&&!gfb.editing
+      ?`<button class="btn-regen-fb" id="regen-gfb-${prefix}" onclick="regenWithGfb('${prefix}')">↺ Regenerar batería con este feedback</button>`:''}
+  </div>`;
+}
+
+function bindGeneralFb(prefix,genFnGetter){}// placeholder — handled inline via onclick
+
+function setGfbVal(prefix,val){
+  gfbState[prefix].val=gfbState[prefix].val===val?'':val;
+  refreshGfbBox(prefix);
+}
+function editGfb(prefix){gfbState[prefix].editing=true;refreshGfbBox(prefix);}
+function cancelGfb(prefix){gfbState[prefix].editing=false;refreshGfbBox(prefix);}
+function saveGfb(prefix){
+  const ta=document.getElementById(`gfb-ta-${prefix}`);
+  if(ta)gfbState[prefix].text=ta.value;
+  gfbState[prefix].editing=false;refreshGfbBox(prefix);
+}
+function refreshGfbBox(prefix){
+  const box=document.getElementById(`gfb-box-${prefix}`);
+  if(!box)return;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=renderGeneralFbBox(prefix);
+  box.replaceWith(tmp.firstElementChild);
+}
+
+async function regenWithGfb(prefix){
+  const gfb=gfbState[prefix];
+  if(!gfb.text&&!gfb.val)return;
+  const instructions=`${gfb.val?'Valoración: '+gfb.val+'. ':''}${gfb.text}`;
+  const prevGfb=JSON.parse(JSON.stringify(gfb));
+  if(prefix==='x') await generateX(instructions);
+  else if(prefix==='ig') await generateIG(instructions);
+  else await generateSpecial(instructions);
+  // Restore feedback
+  Object.assign(gfbState[prefix],prevGfb);
+  gfbState[prefix].editing=false;
+  refreshGfbBox(prefix);
+}
+
+// ── EXPORT EXCEL ──────────────────────────────
+function exportExcel(prefix,mes){
+  try{
+    if(!window.XLSX){alert('Librería Excel aún cargando. Inténtalo en un momento.');return;}
+    const wb=XLSX.utils.book_new();
+
+    if(prefix==='x'){
+      const blocks=window._xBlocks||[];
+      if(!blocks.length){alert('No hay posts generados.');return;}
+      // Header row styled like client template
+      const hdrs=[['PERFIL X - CSL IBERIA'],['Fecha','','Contenido','Link','Multimedia','Temática']];
+      const rows=blocks.map((b,i)=>{
+        const fecha=b.header[1]||'';
+        // Split fecha into day-of-week and date if possible (e.g. "Lunes, 23-feb")
+        const parts=fecha.split(',').map(s=>s.trim());
+        const diaSemana=parts[0]||'';
+        const diaNum=parts[1]||'';
+        const copy=document.getElementById(`x-ta-${i}`)?.value||b.body;
+        return [diaSemana, diaNum, copy, b.link!=='—'?b.link:'', b.multimedia!=='—'?b.multimedia:'', b.header[2]||''];
+      });
+      const ws=XLSX.utils.aoa_to_sheet([...hdrs,...rows]);
+      // Merge title row
+      ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+      // Column widths
+      ws['!cols']=[{wch:12},{wch:8},{wch:65},{wch:50},{wch:30},{wch:22}];
+      // Row heights
+      ws['!rows']=[{hpx:28},{hpx:18},...rows.map(()=>({hpx:80}))];
+      XLSX.utils.book_append_sheet(wb,ws,'X Twitter');
+
+    }else if(prefix==='ig'){
+      const blocks=window._igBlocks||[];
+      if(!blocks.length){alert('No hay contenidos generados.');return;}
+      // ES sheet
+      const hdrsES=[['PERFIL INSTAGRAM - CSL IBERIA (ES)'],['Fecha','','Contenido','Link','Multimedia','Temática']];
+      const rowsES=blocks.map((b,i)=>{
+        const fecha=b.header[1]||'';
+        const parts=fecha.split(',').map(s=>s.trim());
+        const copy=document.getElementById(`ig-es-${i}`)?.value||b.es;
+        return [parts[0]||'',parts[1]||'',copy,b.link!=='—'?b.link:'',b.multimedia!=='—'?b.multimedia:'',b.header[3]||b.header[2]||''];
+      });
+      const wsES=XLSX.utils.aoa_to_sheet([...hdrsES,...rowsES]);
+      wsES['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+      wsES['!cols']=[{wch:12},{wch:8},{wch:65},{wch:50},{wch:30},{wch:22}];
+      wsES['!rows']=[{hpx:28},{hpx:18},...rowsES.map(()=>({hpx:100}))];
+      XLSX.utils.book_append_sheet(wb,wsES,'Instagram ES');
+      // PT sheet
+      const hdrsPT=[['PERFIL INSTAGRAM - CSL IBERIA (PT)'],['Fecha','','Contenido','Link','Multimedia','Temática']];
+      const rowsPT=blocks.map((b,i)=>{
+        const fecha=b.header[1]||'';
+        const parts=fecha.split(',').map(s=>s.trim());
+        const copy=document.getElementById(`ig-pt-${i}`)?.value||b.pt;
+        return [parts[0]||'',parts[1]||'',copy,b.link!=='—'?b.link:'',b.multimedia!=='—'?b.multimedia:'',b.header[3]||b.header[2]||''];
+      });
+      const wsPT=XLSX.utils.aoa_to_sheet([...hdrsPT,...rowsPT]);
+      wsPT['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+      wsPT['!cols']=[{wch:12},{wch:8},{wch:65},{wch:50},{wch:30},{wch:22}];
+      wsPT['!rows']=[{hpx:28},{hpx:18},...rowsPT.map(()=>({hpx:100}))];
+      XLSX.utils.book_append_sheet(wb,wsPT,'Instagram PT');
+    }
+    XLSX.writeFile(wb,`CSLIberia_${prefix.toUpperCase()}_${(mes||'').replace(/\s/g,'_')}.xlsx`);
+  }catch(e){alert('Error al exportar: '+e.message);console.error(e);}
+}
+
+function exportExcelSp(canal){
+  const cards=document.querySelectorAll('#sp-results .post-card');
+  if(!cards.length){alert('No hay copys generados.');return;}
+  try{
+    if(!window.XLSX){alert('Librería Excel aún cargando.');return;}
+    const hdrs=[['COPYS ESPECIALES - CSL IBERIA'],['Contenido','Link','Multimedia','Temática','Copy (PT)','Feedback']];
+    const rows=[];
+    cards.forEach((c,i)=>{
+      const tas=c.querySelectorAll('.post-ta');
+      const h=[...c.querySelectorAll('.post-header .post-num, .post-header .tag')].map(e=>e.textContent.trim());
+      const fbEl=c.querySelector('.post-fb-note');
+      rows.push([tas[0]?.value||'','','',h[1]||'',tas[1]?.value||'',fbEl?fbEl.textContent.trim():'']);
+    });
+    const ws=XLSX.utils.aoa_to_sheet([...hdrs,...rows]);
+    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:5}}];
+    ws['!cols']=[{wch:65},{wch:50},{wch:30},{wch:22},{wch:65},{wch:30}];
+    ws['!rows']=[{hpx:28},{hpx:18},...rows.map(()=>({hpx:100}))];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,`Copys_${canal.slice(0,12)}`);
+    XLSX.writeFile(wb,`CSLIberia_Especial_${canal.replace(/[^a-z0-9]/gi,'_')}.xlsx`);
+  }catch(e){alert('Error al exportar: '+e.message);console.error(e);}
+}
+
+// ── COPY UTILS ────────────────────────────────
+function copyTa(btn,id){
+  navigator.clipboard.writeText(document.getElementById(id)?.value||'').then(()=>{
+    const orig=btn.textContent;btn.textContent='✓ Copiado';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},2000);
+  });
+}
+function copyBoth(eId,pId,btn){
+  const t=`🇪🇸\n${document.getElementById(eId)?.value||''}\n\n🇵🇹\n${document.getElementById(pId)?.value||''}`;
+  navigator.clipboard.writeText(t).then(()=>{
+    const orig=btn.textContent;btn.textContent='✓ Copiado';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},2000);
+  });
+}
+function copyAllPosts(prefix){
+  const all=[...document.querySelectorAll(`#${prefix}-results .post-ta`)].map((ta,i)=>`--- COPY ${i+1} ---\n${ta.value}`).join('\n\n');
+  navigator.clipboard.writeText(all).then(()=>alert('Todos los copys copiados al portapapeles.'));
+}
+function updateCC(ta,id){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=`${ta.value.length} caracteres`;
+  el.className='char-c';
+}
+function setLoading(prefix,on){
+  document.getElementById(`btn-gen-${prefix}`).disabled=on;
+  document.getElementById(`${prefix}-loading`).classList.toggle('show',on);
+}
+</script>
+</body>
+</html>

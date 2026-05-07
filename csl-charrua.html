@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Hub – Antonio Charrua</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#17004C;--blue:#3570B8;--orange:#EC8431;--red:#CC0000;--gray:#f4f4f4;--border:#e2e2e2;--wh:#fff;--text:#1a1a2e;--muted:#666;--note:#fff9e6;--note-b:#e8c940;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--gray);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.top-bar{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,var(--orange) 100%);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;}
+.top-bar-left{display:flex;align-items:center;gap:14px;}
+.back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:7px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.back-btn:hover{background:rgba(255,255,255,.25);}
+.top-bar-logo{font-size:13px;font-weight:700;color:rgba(255,255,255,.8);}
+.top-bar-logo em{font-style:normal;color:#fff;}
+.top-bar-right{font-size:11px;color:rgba(255,255,255,.55);font-weight:500;letter-spacing:.5px;}
+header{background:var(--wh);border-bottom:1px solid var(--border);}
+nav{display:flex;padding:0 28px;gap:0;overflow-x:auto;}
+.nav-btn{padding:13px 20px;border:none;background:none;font-size:13px;font-weight:600;color:#999;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.nav-btn:hover{color:var(--blue);}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+main{flex:1;max-width:1060px;margin:28px auto;padding:0 20px;width:100%;}
+.panel{display:none;}.panel.active{display:block;}
+.section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.section-sub{font-size:12px;color:#999;margin-bottom:20px;}
+.profile-banner{background:var(--wh);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;gap:16px;}
+.profile-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--blue));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0;}
+.profile-name{font-size:16px;font-weight:800;color:var(--navy);}
+.profile-role{font-size:12px;color:var(--muted);margin-top:2px;}
+.profile-links{display:flex;gap:8px;margin-top:6px;}
+.profile-link{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;text-decoration:none;border:1px solid;}
+.lk-linkedin{color:#0077B5;border-color:#0077B588;background:#0077B511;}
+.lk-x{color:#000;border-color:#00000044;background:#00000008;}
+.card{background:var(--wh);border-radius:10px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden;}
+.card-header{background:var(--gray);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;}
+.card-header-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);}
+.card-body{padding:18px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+.field{margin-bottom:14px;}.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+select,input[type=text],input[type=number]{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);background:var(--wh);appearance:none;}
+select:focus,input:focus{outline:none;border-color:var(--blue);}
+textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:7px;font-size:13px;color:var(--text);resize:vertical;font-family:inherit;line-height:1.5;}
+textarea:focus{outline:none;border-color:var(--blue);}
+.btn{padding:9px 20px;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;}.btn-primary:hover{opacity:.88;}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed;}
+.btn-ghost{background:none;border:1px solid var(--border);color:var(--muted);}.btn-ghost:hover{border-color:#bbb;background:var(--gray);}
+.btn-green{background:#1a9e52;color:#fff;}.btn-green:hover{background:#148040;}
+.btn-sm{padding:5px 12px;font-size:11px;}
+.btn-copy{background:#f0f0f0;color:#555;border:1px solid #ddd;}.btn-copy:hover{background:#e4e4e4;}
+.btn-copy.copied{background:#d4f5e1;color:#0d6633;border-color:#a8e6c0;}
+.gen-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.loading{display:none;align-items:center;gap:7px;color:var(--blue);font-size:12px;font-weight:600;}
+.loading.show{display:flex;}
+.spinner{width:16px;height:16px;border:2.5px solid #c0d4f0;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.notes-block{background:#fffdf5;border:1px solid var(--note-b);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+.notes-block-header{background:#fff8dc;border-bottom:1px solid var(--note-b);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+.notes-block-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#8a6e00;}
+.notes-body{padding:14px;}
+.notes-hint{font-size:11px;color:#b09040;margin-bottom:10px;line-height:1.5;}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;}
+.note-card{background:var(--note);border:1px solid var(--note-b);border-radius:8px;padding:10px 10px 6px;position:relative;}
+.note-card textarea{background:transparent;border:none;resize:none;font-size:12px;color:var(--text);width:100%;outline:none;font-family:inherit;line-height:1.5;min-height:56px;}
+.note-del{position:absolute;top:5px;right:7px;background:none;border:none;cursor:pointer;font-size:13px;color:#ccc;line-height:1;}
+.note-del:hover{color:var(--red);}
+.note-ts{font-size:10px;color:#c0a030;margin-top:3px;}
+.note-attach-row{display:flex;align-items:center;gap:6px;margin-top:6px;border-top:1px solid #f0e090;padding-top:6px;flex-wrap:wrap;}
+.note-attach-btn{font-size:10px;padding:3px 8px;border:1px dashed #c8a820;border-radius:4px;background:none;color:#8a6e00;cursor:pointer;}
+.note-attach-btn:hover{background:#fff3b0;}
+.note-file-chip{display:inline-flex;align-items:center;gap:4px;background:#fff3b0;border:1px solid #e0c030;border-radius:12px;padding:2px 8px;font-size:10px;color:#6a5200;}
+.note-file-chip button{background:none;border:none;cursor:pointer;color:#c0a030;font-size:11px;line-height:1;}
+.note-file-chip button:hover{color:var(--red);}
+.results-bar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.results-bar span{font-size:12px;color:#888;font-weight:500;}
+.post-card{background:var(--wh);border:1px solid var(--border);border-radius:9px;margin-bottom:13px;overflow:hidden;}
+.post-header{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--gray);border-bottom:1px solid var(--border);}
+.post-num{font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.4px;}
+.post-meta{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600;}
+.tag-topic{background:#e8f0fb;color:#1a4a8a;}
+.tag-format{background:#fff3cd;color:#7a5a00;}
+.tag-lang{background:#e8f5e9;color:#1a6633;}
+.post-body{padding:13px;}
+.post-ta{width:100%;border:1px solid transparent;border-radius:6px;padding:9px;font-size:13px;color:var(--text);line-height:1.7;resize:vertical;background:transparent;font-family:inherit;transition:border .2s,background .2s;}
+.post-ta:hover{border-color:var(--border);background:#fafafa;}
+.post-ta:focus{border-color:var(--blue);background:var(--wh);outline:none;}
+.lang-div{border:none;border-top:1px dashed var(--border);margin:10px 0;}
+.lang-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#bbb;margin-bottom:5px;}
+.post-footer{padding:8px 13px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:5px;background:#fafafa;flex-wrap:wrap;}
+.char-c{font-size:10px;color:#aaa;text-align:right;margin-top:3px;}
+.error-msg{background:#fff3f3;border:1px solid #f5c6cb;border-radius:8px;padding:12px 16px;color:#721c24;font-size:12px;margin-top:12px;}
+/* Post feedback */
+.post-fb-section{padding:10px 13px;border-top:1px solid #f5f5f5;background:#fafafa;}
+.post-fb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#aaa;margin-bottom:5px;}
+.post-fb-note{font-size:12px;color:#374151;background:#FFFBEB;border:1px solid #FDE68A;border-radius:6px;padding:6px 8px;cursor:pointer;margin-bottom:5px;white-space:pre-wrap;}
+.post-fb-note:hover{background:#FEF3C7;}
+.post-fb-empty{font-size:12px;color:#bbb;font-style:italic;cursor:pointer;padding:4px 6px;border-radius:6px;}
+.post-fb-empty:hover{background:#FFFBEB;color:#92400E;}
+.btn-rewrite-post{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:4px;}
+.btn-rewrite-post:disabled{opacity:.5;cursor:not-allowed;}
+/* General feedback */
+.general-fb{background:var(--wh);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:14px;}
+.general-fb-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--blue);margin-bottom:10px;}
+.val-row{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+.val-btn{border:1.5px solid var(--border);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--wh);}
+.val-btn.aprobado{border-color:#059669;background:#D1FAE5;color:#065F46;}
+.val-btn.revisar{border-color:#D97706;background:#FEF3C7;color:#92400E;}
+.val-btn.rechazar{border-color:#DC2626;background:#FEE2E2;color:#991B1B;}
+.btn-regen-fb{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px;}
+/* Learning panel */
+.learn-summary-card{background:#F0F4FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 18px;margin-bottom:12px;}
+.learn-summary-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#1d4ed8;margin-bottom:10px;}
+.learn-point{font-size:13px;color:#374151;line-height:1.65;padding:6px 0;border-bottom:1px solid #DBEAFE;}
+.learn-point:last-child{border-bottom:none;}
+.learn-history-item{background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.learn-history-meta{font-size:10px;color:#aaa;margin-bottom:4px;}
+.learn-history-preview{font-size:12px;color:#555;line-height:1.5;white-space:pre-wrap;max-height:60px;overflow:hidden;}
+/* Lang toggle */
+.lang-pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.lang-pill{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid var(--border);cursor:pointer;background:var(--wh);color:var(--muted);transition:all .15s;}
+.lang-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+footer{background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,var(--orange) 100%);padding:8px 28px;text-align:center;}
+footer span{font-size:11px;color:rgba(255,255,255,.5);}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-left">
+    <a href="index.html" class="back-btn">← Dashboard</a>
+    <div class="top-bar-logo"><em>Content Hub</em> · Cícero Comunicación</div>
+  </div>
+  <div class="top-bar-right">ANTONIO CHARRUA · CSL IBERIA</div>
+</div>
+
+<header>
+  <nav>
+    <button class="nav-btn active" onclick="switchPanel('li',this)">💼 LinkedIn</button>
+    <button class="nav-btn" onclick="switchPanel('x',this)">𝕏 Twitter / X</button>
+    <button class="nav-btn" onclick="switchPanel('special',this)">✏️ Copys especiales</button>
+    <button class="nav-btn" onclick="switchPanel('learning',this)">🧠 Aprendizaje</button>
+  </nav>
+</header>
+
+<main>
+
+<div class="profile-banner">
+  <div class="profile-avatar">AC</div>
+  <div style="flex:1;">
+    <div class="profile-name">Antonio Charrua</div>
+    <div class="profile-role">General Manager · CSL Iberia (Spain & Portugal)</div>
+    <div class="profile-links">
+      <a class="profile-link lk-linkedin" href="https://www.linkedin.com/in/antonio-charrua/" target="_blank">LinkedIn</a>
+      <a class="profile-link lk-x" href="https://x.com/CharruaAntonio" target="_blank">X / Twitter</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LINKEDIN ══ -->
+<div id="panel-li" class="panel active">
+  <div class="section-title">Batería mensual · LinkedIn</div>
+  <div class="section-sub">2 posts semanales · British English por defecto · Institucional y personal</div>
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Configuración</span></div>
+    <div class="card-body">
+      <div class="field"><label>Mes de publicación</label>
+        <select id="li-mes"><option value="">Selecciona mes</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
+      <div class="field"><label>Idioma de salida</label>
+        <div class="lang-pills" id="li-lang">
+          <span class="lang-pill active" data-lang="en" onclick="setLang('li','en',this)">🇬🇧 English (default)</span>
+          <span class="lang-pill" data-lang="es" onclick="setLang('li','es',this)">🇪🇸 Español</span>
+          <span class="lang-pill" data-lang="pt" onclick="setLang('li','pt',this)">🇵🇹 Português</span>
+          <span class="lang-pill" data-lang="all" onclick="setLang('li','all',this)">🌐 Los tres</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes del mes</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('li')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Eventos, congresos, artículos reales que quieras compartir (incluye la URL aquí para que se use directamente), noticias, campañas CSL, ideas concretas… Si pegas un enlace real aquí, la IA lo usará en el post.</div>
+      <div class="notes-grid" id="li-notes-grid"></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generate('li')" id="btn-gen-li">Generar batería LinkedIn</button>
+      <div class="loading" id="li-loading"><div class="spinner"></div> Generating posts...</div>
+    </div>
+  </div></div>
+  <div id="li-results"></div>
+</div>
+
+<!-- ══ X ══ -->
+<div id="panel-x" class="panel">
+  <div class="section-title">Batería mensual · X (Twitter)</div>
+  <div class="section-sub">2 posts semanales · Más conciso que LinkedIn · British English por defecto</div>
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Configuración</span></div>
+    <div class="card-body">
+      <div class="field"><label>Mes de publicación</label>
+        <select id="x-mes"><option value="">Selecciona mes</option><option>January</option><option>February</option><option>March</option><option>April</option><option>May</option><option>June</option><option>July</option><option>August</option><option>September</option><option>October</option><option>November</option><option>December</option></select></div>
+      <div class="field"><label>Idioma de salida</label>
+        <div class="lang-pills" id="x-lang">
+          <span class="lang-pill active" data-lang="en" onclick="setLang('x','en',this)">🇬🇧 English (default)</span>
+          <span class="lang-pill" data-lang="es" onclick="setLang('x','es',this)">🇪🇸 Español</span>
+          <span class="lang-pill" data-lang="pt" onclick="setLang('x','pt',this)">🇵🇹 Português</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes del mes</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('x')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Eventos, artículos a compartir, temas de actualidad… Si pegas una URL real aquí, la IA la usará directamente en el post.</div>
+      <div class="notes-grid" id="x-notes-grid"></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generate('x')" id="btn-gen-x">Generar batería X</button>
+      <div class="loading" id="x-loading"><div class="spinner"></div> Generating posts...</div>
+    </div>
+  </div></div>
+  <div id="x-results"></div>
+</div>
+
+<!-- ══ ESPECIAL ══ -->
+<div id="panel-special" class="panel">
+  <div class="section-title">Copys especiales</div>
+  <div class="section-sub">Solicitudes puntuales · Cualquier canal · Con briefing libre</div>
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">Briefing</span></div>
+    <div class="card-body">
+      <div class="two-col">
+        <div class="field"><label>Canal</label>
+          <select id="sp-canal"><option>LinkedIn</option><option>X (Twitter)</option><option>Ambos</option></select></div>
+        <div class="field"><label>Nº de copys</label>
+          <input type="number" id="sp-num" min="1" placeholder="Ej: 3" style="width:100%;"/></div>
+      </div>
+      <div class="field"><label>Idioma de salida</label>
+        <div class="lang-pills" id="sp-lang">
+          <span class="lang-pill active" data-lang="en" onclick="setLang('sp','en',this)">🇬🇧 English</span>
+          <span class="lang-pill" data-lang="es" onclick="setLang('sp','es',this)">🇪🇸 Español</span>
+          <span class="lang-pill" data-lang="pt" onclick="setLang('sp','pt',this)">🇵🇹 Português</span>
+          <span class="lang-pill" data-lang="all" onclick="setLang('sp','all',this)">🌐 Los tres</span>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px;"><label>Briefing</label>
+        <textarea id="sp-brief" rows="4" placeholder="Describe qué necesitas: tema, contexto, tono específico, enlace real a compartir, evento…"></textarea></div>
+    </div>
+  </div>
+  <div class="notes-block">
+    <div class="notes-block-header">
+      <span class="notes-block-title">📌 Apuntes y referencias</span>
+      <button class="btn btn-ghost btn-sm" onclick="addNote('sp')">+ Nuevo apunte</button>
+    </div>
+    <div class="notes-body">
+      <div class="notes-hint">Contexto adicional, datos, artículos de referencia, URLs reales a usar… Adjunta archivos si es necesario.</div>
+      <div class="notes-grid" id="sp-notes-grid"></div>
+    </div>
+  </div>
+  <div class="card"><div class="card-body">
+    <div class="gen-bar">
+      <button class="btn btn-primary" onclick="generateSpecial()" id="btn-gen-sp">Generar copys</button>
+      <div class="loading" id="sp-loading"><div class="spinner"></div> Generating...</div>
+    </div>
+  </div></div>
+  <div id="sp-results"></div>
+</div>
+
+<!-- ══ APRENDIZAJE ══ -->
+<div id="panel-learning" class="panel">
+  <div class="section-title">🧠 Aprendizaje del perfil</div>
+  <div class="section-sub">Instrucciones permanentes que la IA aplicará en todas las baterías · Se guardan automáticamente</div>
+
+  <!-- Extraer feedback de batería -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">📋 Extraer feedback de la batería activa</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">Extrae automáticamente todas las notas de feedback de la batería generada. Luego pégalas en el cajón de abajo para resumirlas en aprendizajes.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="extractFeedback('li')">📋 Extraer feedback LinkedIn</button>
+        <button class="btn btn-ghost btn-sm" onclick="extractFeedback('x')">📋 Extraer feedback X</button>
+        <button class="btn btn-ghost btn-sm" onclick="extractFeedback('sp')">📋 Extraer feedback Copys especiales</button>
+      </div>
+      <div id="extracted-fb-result" style="font-size:13px;color:#374151;background:#F8F9FB;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:40px;white-space:pre-wrap;line-height:1.65;display:none;"></div>
+      <div id="extracted-fb-msg" style="font-size:12px;color:#888;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Resumir feedback -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">🔄 Resumir feedback del mes</span></div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">Pega aquí el feedback del mes. La IA extrae aprendizajes concretos que puedes añadir a las instrucciones permanentes.</p>
+      <textarea id="learn-feedback-raw" rows="6" placeholder="Pega aquí el feedback del mes: notas por post, comentarios, qué funcionó y qué no…"></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="summarizeFeedback()" id="btn-summarize">✦ Resumir y extraer aprendizajes</button>
+        <div class="loading" id="summarize-loading"><div class="spinner"></div> Analizando...</div>
+      </div>
+      <div id="learn-summary-result" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- Instrucciones permanentes -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-header-title">📌 Instrucciones permanentes</span>
+      <span style="font-size:10px;color:#aaa;" id="learn-saved-ts"></span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.6;">Todo lo que escribas aquí se inyecta automáticamente en cada batería generada. Tono aprendido, errores a evitar, preferencias del perfil, formatos que funcionan…</p>
+      <textarea id="learn-permanent" rows="10" placeholder="Ejemplos:
+– Evitar frases vacías: 'game-changer', 'thrilled to announce', 'I'm excited to share'
+– Cada post debe terminar con una pregunta abierta al lector
+– En LinkedIn, 3 párrafos sustanciales. Nunca listas de bullets
+– Cuando el tema es IA, mencionar siempre el concepto 'Human Augmented Intelligence'
+– El tono en español debe ser más cercano que en inglés
+– Evitar referencias a Cape Town a menos que sea muy natural y no forzado
+…" style="line-height:1.6;font-size:13px;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="savePermanent()">💾 Guardar instrucciones</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearPermanent()">🗑 Borrar todo</button>
+        <span id="learn-save-msg" style="font-size:12px;color:#059669;font-weight:600;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial -->
+  <div class="card">
+    <div class="card-header"><span class="card-header-title">🗂 Historial de versiones</span></div>
+    <div class="card-body">
+      <div id="learn-history-list"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+<footer><span>Antonio Charrua · CSL Iberia · Content Hub · Cícero Comunicación</span></footer>
+
+<script>
+// ── Web Search ────────────────────────────────
+const SEARCH_API_URL="https://cicero-hub-backend.onrender.com/api/search";
+
+async function buscarURLsRelevantes(tema,area=''){
+  try{
+    const query=area?`${tema} ${area} noticias recientes`:`${tema} noticias recientes`;
+    console.log('🔍 Buscando URLs:',query);
+    const response=await fetch(SEARCH_API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query:query,max_results:3})
+    });
+    if(!response.ok){console.warn('⚠️ Búsqueda fallida');return null;}
+    const data=await response.json();
+    if(data.results&&data.results.length>0){
+      console.log('✅ URLs encontradas:',data.results.length);
+      return{
+        resumen:data.answer||'',
+        urls:data.results.map(r=>r.url),
+        fuentes:data.results.map(r=>({
+          titulo:r.title,
+          url:r.url,
+          extracto:r.content?r.content.substring(0,150):''
+        }))
+      };
+    }
+    return null;
+  }catch(error){console.error('❌ Error en búsqueda:',error);return null;}
+}
+
+function formatearFuentesParaPrompt(fuentes){
+  if(!fuentes||fuentes.length===0)return'';
+  return`\n\nCURRENT SOURCES (include relevant URLs):\n${fuentes.map((f,i)=>`${i+1}. ${f.titulo}\n   ${f.url}\n   ${f.extracto}...`).join('\n\n')}`;
+}
+
+const LEARN_KEY='charrua_learning_v1';
+const LEARN_HIST_KEY='charrua_learning_hist_v1';
+
+// ── SYSTEM PROMPT ─────────────────────────────
+const SYS=`You are writing social media content on behalf of Antonio Charrua, General Manager of CSL Iberia (Spain and Portugal).
+
+PERSONA:
+- Institutional yet warm, personal and direct. A leader who balances corporate authority with human authenticity.
+- Writes in British English by default. Fluent, confident, never stiff.
+- Believes leaders don't need to master every area, but must give their team security and direction.
+- Passionate about his work — sees it as a calling, often enters a "flow state".
+- Optimistic about AI: references Deepak Chopra's framing of "Human Augmented Intelligence". Never fearful.
+- Values: transparency, directness, pragmatism, generosity, optimism.
+- Inspired by: Robin Sharma, Brian Solis, his father. Listens to TED Talks, Fixable, podcasts on business and AI.
+- Travels frequently; values disconnecting. Has a favourite city (Cape Town) but this should only appear naturally and rarely — never force it into posts.
+- Born in Mozambique, lived in Brazil, leads at European and global level.
+- Wants to be perceived as a European and global opinion leader, not just Iberian.
+
+TONE RULES:
+- Direct, clear, never empty. No filler phrases: never "game-changer", "thrilled to announce", "I'm excited to share", "marcar la diferencia".
+- Starts posts with a hook: a short provocative statement, a direct question, or a personal observation.
+- EVERY post must end with an open question to the audience — this is mandatory. The question should invite reflection, not just reaction.
+- 3 substantive paragraphs for LinkedIn. Short and punchy for X (2-3 lines max per post).
+- Minimal hashtags: 2-4 max, always relevant. Never generic hashtags.
+- Never preachy or self-congratulatory. Humble but confident.
+
+LINKS AND SOURCES — CRITICAL RULES:
+- NEVER invent URLs. If a URL was provided in the notes, use it exactly as given.
+- If no URL was provided, write "SOURCE_NEEDED: [type of source to find]" instead of a URL. This signals the community manager to find and insert the real link before publishing.
+- Only reference real, well-known organisations by name (WEF, Harvard Business Review, TED, Financial Times, Farmaindustria, EMA, CSL.com) without generating fictional article paths.
+
+TOPICS — only write about topics you can ground in real, known facts or widely reported trends:
+- CSL Iberia news and milestones (use only what is provided in notes)
+- Leadership and management (grounded in known frameworks: Robin Sharma, Brian Solis, Simon Sinek, etc.)
+- AI and digital transformation — always framed as "Human Augmented Intelligence"
+- Health policy and innovation (WEF, EMA, Farmaindustria — reference by name, no invented articles)
+- Personal reflection on leadership, travel, disconnecting, team culture
+- Podcast or reading recommendation (only if provided or widely known)
+
+OUTPUT: Only the requested content, no preamble or meta-commentary.`;
+
+// ── STATE ─────────────────────────────────────
+const state={notes:{li:[],x:[],sp:[]}};
+const gfbState={li:{val:'',text:'',editing:false},x:{val:'',text:'',editing:false},sp:{val:'',text:'',editing:false}};
+const postFb={};
+const langs={li:'en',x:'en',sp:'en'};
+
+// ── LEARNING ──────────────────────────────────
+let permanentInstructions='';
+let learningHistory=[];
+
+function loadLearning(){
+  try{permanentInstructions=localStorage.getItem(LEARN_KEY)||'';}catch(_){permanentInstructions='';}
+  try{learningHistory=JSON.parse(localStorage.getItem(LEARN_HIST_KEY)||'[]');}catch(_){learningHistory=[];}
+  const ta=document.getElementById('learn-permanent');
+  if(ta)ta.value=permanentInstructions;
+  renderLearnHistory();
+  if(learningHistory[0]){
+    const ts=document.getElementById('learn-saved-ts');
+    if(ts)ts.textContent='Última actualización: '+learningHistory[0].date;
+  }
+}
+function getPermanent(){try{return localStorage.getItem(LEARN_KEY)||'';}catch(_){return '';}}
+
+function savePermanent(){
+  const val=document.getElementById('learn-permanent')?.value||'';
+  permanentInstructions=val;
+  localStorage.setItem(LEARN_KEY,val);
+  const entry={date:new Date().toLocaleString('es-ES',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),text:val};
+  learningHistory=[entry,...learningHistory].slice(0,10);
+  localStorage.setItem(LEARN_HIST_KEY,JSON.stringify(learningHistory));
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='✓ Guardado';setTimeout(()=>msg.textContent='',3000);}
+  const ts=document.getElementById('learn-saved-ts');
+  if(ts)ts.textContent='Última actualización: '+entry.date;
+  renderLearnHistory();
+}
+function clearPermanent(){
+  if(!confirm('¿Borrar todas las instrucciones permanentes?'))return;
+  permanentInstructions='';localStorage.removeItem(LEARN_KEY);
+  const ta=document.getElementById('learn-permanent');if(ta)ta.value='';
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='Borrado';setTimeout(()=>msg.textContent='',2000);}
+}
+function renderLearnHistory(){
+  const el=document.getElementById('learn-history-list');if(!el)return;
+  if(!learningHistory.length){el.innerHTML=`<p style="font-size:12px;color:#aaa;font-style:italic;">Sin versiones guardadas aún.</p>`;return;}
+  el.innerHTML=learningHistory.map((h,i)=>`<div class="learn-history-item">
+    <div style="flex:1;"><div class="learn-history-meta">${h.date}</div><div class="learn-history-preview">${h.text.slice(0,180)}${h.text.length>180?'…':''}</div></div>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button class="btn btn-ghost btn-sm" onclick="restoreLearn(${i})">↩ Recuperar</button>
+      <button class="btn btn-ghost btn-sm" style="color:#dc2626;" onclick="deleteLearn(${i})">🗑</button>
+    </div></div>`).join('');
+}
+function restoreLearn(i){
+  const h=learningHistory[i];if(!h)return;
+  permanentInstructions=h.text;localStorage.setItem(LEARN_KEY,h.text);
+  const ta=document.getElementById('learn-permanent');if(ta)ta.value=h.text;
+  const msg=document.getElementById('learn-save-msg');
+  if(msg){msg.textContent='✓ Versión recuperada';setTimeout(()=>msg.textContent='',2000);}
+}
+function deleteLearn(i){learningHistory.splice(i,1);localStorage.setItem(LEARN_HIST_KEY,JSON.stringify(learningHistory));renderLearnHistory();}
+
+function extractFeedback(prefix){
+  const cards=document.querySelectorAll(`#${prefix}-results .post-card`);
+  const feedbacks=[];
+  const gfb=gfbState[prefix];
+  if(gfb.text)feedbacks.unshift(`General feedback: ${gfb.text}`);
+  cards.forEach((c,i)=>{const n=c.querySelector('.post-fb-note');if(n&&n.textContent.trim())feedbacks.push(`Post ${i+1}: ${n.textContent.trim()}`);});
+  const el=document.getElementById('extracted-fb-result');
+  const msg=document.getElementById('extracted-fb-msg');
+  if(!feedbacks.length){el.style.display='none';if(msg)msg.textContent='No hay notas en esta batería todavía.';return;}
+  el.textContent=feedbacks.join('\n\n');el.style.display='block';
+  if(msg)msg.innerHTML=`<span style="color:#059669;font-weight:600;">${feedbacks.length} nota${feedbacks.length>1?'s':''} extraída${feedbacks.length>1?'s':''}.</span>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('extracted-fb-result').textContent).then(()=>alert('Copiado.'))" style="margin-left:8px;background:#eee;border:1px solid #ddd;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">📋 Copiar</button>
+    <button onclick="document.getElementById('learn-feedback-raw').value=document.getElementById('extracted-fb-result').textContent;document.getElementById('learn-feedback-raw').scrollIntoView({behavior:'smooth',block:'center'})" style="margin-left:4px;background:var(--blue);color:white;border:none;border-radius:5px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;">⬇ Pegar en cajón</button>`;
+}
+
+async function summarizeFeedback(){
+  const raw=document.getElementById('learn-feedback-raw')?.value?.trim();
+  if(!raw)return alert('Pega el feedback del mes antes de resumir.');
+  const btn=document.getElementById('btn-summarize');
+  const loading=document.getElementById('summarize-loading');
+  if(btn)btn.disabled=true;if(loading)loading.classList.add('show');
+  document.getElementById('learn-summary-result').innerHTML='';
+  const prompt=`Analiza el siguiente feedback de revisión de contenidos de redes sociales de Antonio Charrua (GM de CSL Iberia) y extrae entre 5 y 8 aprendizajes concretos y accionables para aplicar en futuras baterías. Cada aprendizaje debe ser una instrucción directa en infinitivo ("Evitar…", "Incluir siempre…", "Priorizar…"). No observaciones vagas.
+
+FEEDBACK:
+${raw}
+
+Responde ÚNICAMENTE con JSON sin markdown:
+{"aprendizajes":["...","..."]}`;
+  try{
+    const res=await fetch('https://cicero-hub-backend.onrender.com/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();if(data.error)throw new Error(data.error.message);
+    const text=data.content?.map(b=>b.text||'').join('')||'';
+    const parsed=JSON.parse(text.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim());
+    const points=parsed.aprendizajes||[];
+    document.getElementById('learn-summary-result').innerHTML=`<div class="learn-summary-card">
+      <div class="learn-summary-title">✅ Aprendizajes extraídos (${points.length})</div>
+      ${points.map((p,i)=>`<div class="learn-point"><strong>${i+1}.</strong> ${p}</div>`).join('')}
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick='addLearnPoints(${JSON.stringify(points)})'>➕ Añadir a instrucciones permanentes</button>
+        <button class="btn btn-ghost btn-sm" onclick='replaceLearnPoints(${JSON.stringify(points)})'>↩ Reemplazar instrucciones</button>
+      </div></div>`;
+  }catch(e){document.getElementById('learn-summary-result').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;}
+  if(btn)btn.disabled=false;if(loading)loading.classList.remove('show');
+}
+function addLearnPoints(points){
+  const ta=document.getElementById('learn-permanent');if(!ta)return;
+  const current=ta.value.trim();
+  ta.value=(current?current+'\n\n':'')+'— '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'})+':\n'+points.map(p=>`– ${p}`).join('\n');
+  const msg=document.getElementById('learn-save-msg');if(msg){msg.textContent='Añadido — recuerda guardar 💾';setTimeout(()=>msg.textContent='',4000);}
+}
+function replaceLearnPoints(points){
+  if(!confirm('¿Reemplazar instrucciones permanentes?'))return;
+  const ta=document.getElementById('learn-permanent');if(!ta)return;
+  ta.value='— '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'})+':\n'+points.map(p=>`– ${p}`).join('\n');
+  const msg=document.getElementById('learn-save-msg');if(msg){msg.textContent='Reemplazado — recuerda guardar 💾';setTimeout(()=>msg.textContent='',4000);}
+}
+
+// ── PANEL / LANG ──────────────────────────────
+function switchPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='learning')loadLearning();
+}
+function setLang(prefix,lang,el){
+  langs[prefix]=lang;
+  document.querySelectorAll(`#${prefix}-lang .lang-pill`).forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+}
+function langLabel(code){
+  return{en:'British English',es:'Spanish (Spain)',pt:'European Portuguese (Portugal, never Brazilian)',all:'British English AND Spanish (Spain) AND European Portuguese (Portugal) — show all three versions clearly labelled'}[code]||'British English';
+}
+
+// ── NOTES ─────────────────────────────────────
+const FICONS={pdf:'📄',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',png:'🖼',jpg:'🖼',jpeg:'🖼',txt:'📃',default:'📎'};
+function addNote(p){
+  const id=Date.now();
+  state.notes[p].push({id,text:'',files:[],fileTexts:{},ts:new Date().toLocaleDateString('es-ES',{day:'2-digit',month:'short'})});
+  renderNotes(p);setTimeout(()=>{const ta=document.getElementById(`nta-${id}`);if(ta)ta.focus();},50);
+}
+function renderNotes(p){
+  const el=document.getElementById(p+'-notes-grid');if(!el)return;
+  if(!state.notes[p].length){el.innerHTML=`<div style="font-size:11px;color:#c0a040;font-style:italic;">No notes yet.</div>`;return;}
+  el.innerHTML=state.notes[p].map(n=>{
+    const chips=n.files.map((f,fi)=>{const ext=f.name.split('.').pop().toLowerCase();return `<span class="note-file-chip">${FICONS[ext]||FICONS.default} ${f.name.length>18?f.name.slice(0,16)+'…':f.name}<button onclick="removeNoteFile('${p}',${n.id},${fi})">×</button></span>`;}).join('');
+    return `<div class="note-card">
+      <textarea id="nta-${n.id}" placeholder="Add event, URL, article, instruction…" oninput="updateNote('${p}',${n.id},this.value)">${n.text}</textarea>
+      <div class="note-attach-row">
+        <input type="file" id="nf-${n.id}" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt" style="display:none" onchange="addNoteFiles(this,'${p}',${n.id})">
+        <button class="note-attach-btn" onclick="document.getElementById('nf-${n.id}').click()">📎 Adjuntar</button>${chips}
+      </div>
+      <div class="note-ts">${n.ts}</div>
+      <button class="note-del" onclick="deleteNote('${p}',${n.id})">×</button>
+    </div>`;
+  }).join('');
+}
+function updateNote(p,id,val){const n=state.notes[p].find(n=>n.id===id);if(n)n.text=val;}
+function deleteNote(p,id){state.notes[p]=state.notes[p].filter(n=>n.id!==id);renderNotes(p);}
+async function addNoteFiles(input,p,noteId){
+  const n=state.notes[p].find(n=>n.id===noteId);if(!n)return;
+  for(const f of [...input.files]){
+    if(n.files.find(x=>x.name===f.name))continue;n.files.push(f);
+    const ext=f.name.split('.').pop().toLowerCase();
+    if(ext==='txt'){const r=new FileReader();r.onload=ev=>{n.fileTexts[f.name]=ev.target.result.slice(0,3000);};r.readAsText(f);}
+    else if(ext==='xlsx'||ext==='xls'){try{const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let txt='';wb.SheetNames.forEach(sn=>{txt+=`[Sheet: ${sn}]\n${XLSX.utils.sheet_to_csv(wb.Sheets[sn]).slice(0,2000)}\n`;});n.fileTexts[f.name]=txt.slice(0,4000);}catch(e){}}
+  }
+  input.value='';renderNotes(p);
+}
+function removeNoteFile(p,noteId,fi){const n=state.notes[p].find(n=>n.id===noteId);if(!n)return;const nm=n.files[fi]?.name;n.files.splice(fi,1);if(nm)delete n.fileTexts[nm];renderNotes(p);}
+function getNotesCtx(p){
+  const notes=state.notes[p].filter(n=>n.text.trim()||n.files.length);
+  if(!notes.length)return '';
+  return '\n\nNOTES FOR THIS BATCH (use URLs provided here directly; do not invent others):\n'+notes.map(n=>{
+    let s=n.text.trim()?`- ${n.text.trim()}`:'';
+    if(n.files.length)s+=(s?' ':'')+`[Files: ${n.files.map(f=>f.name).join(', ')}]`;
+    const txt=Object.entries(n.fileTexts).map(([nm,t])=>`\n  Content of ${nm}:\n  ${t.slice(0,2000)}`).join('');
+    return s+txt;
+  }).join('\n');
+}
+['li','x','sp'].forEach(p=>renderNotes(p));
+loadLearning();
+
+// ── API ───────────────────────────────────────
+async function callClaude(prompt,maxTokens=4000){
+  const r=await fetch('https://cicero-hub-backend.onrender.com/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,system:SYS,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);return d.content[0].text;
+}
+
+// ── GENERATE LI / X ──────────────────────────
+async function generate(prefix,extraInstructions=''){
+  const isLi=prefix==='li';
+  const mes=document.getElementById(prefix+'-mes').value;
+  if(!mes)return alert('Select a month first.');
+  const lang=langs[prefix];
+  const notesCtx=getNotesCtx(prefix);
+  const learnCtx=getPermanent();
+  
+  // 🌐 BÚSQUEDA WEB AUTOMÁTICA
+  let fuentesContext='';
+  const firstNote=getNotes(prefix)[0];
+  if(firstNote&&firstNote.text){
+    const busqueda=await buscarURLsRelevantes(mes+' '+firstNote.text.substring(0,100),'Antonio Charrua CSL');
+    if(busqueda){
+      fuentesContext=formatearFuentesParaPrompt(busqueda.fuentes);
+    }
+  }
+  
+  setLoading(prefix,true);
+  document.getElementById(prefix+'-results').innerHTML='';
+  const platform=isLi?'LinkedIn':'X (Twitter)';
+  const formatRules=isLi
+    ?`LinkedIn format rules:
+- 3 substantial paragraphs. No bullet lists. Hook in the first sentence.
+- MANDATORY: end every post with an open question to the audience that invites genuine reflection (not just "What do you think?").
+- 2-4 hashtags maximum. Relevant, not generic.
+- For links: ONLY use URLs provided in the notes. If none provided, write SOURCE_NEEDED: [type of article/report to find].`
+    :`X format rules:
+- 2-3 short lines. Punchy. First line is the hook — no warm-up.
+- MANDATORY: end with a short, direct question to the audience.
+- 2-3 hashtags maximum.
+- For links: ONLY use URLs from the notes. If none, write SOURCE_NEEDED: [type of source].
+- May be a thread (1/2, 2/2) for complex topics.`;
+  const langInstruction=lang==='all'
+    ?`Output each post THREE times: British English, Spanish (Spain), European Portuguese (Portugal — never Brazilian). Label each version clearly.`
+    :`Write in ${langLabel(lang)}.`;
+  const prompt=`Generate exactly 8 ${platform} posts for Antonio Charrua for ${mes}.
+
+CONTENT MIX — distribute naturally across these topics. Only write about things you can ground in real, known facts or widely reported trends. Do not invent statistics or studies:
+- CSL Iberia / CSL company news (use only what is provided in notes)
+- Personal leadership reflection (grounded in real frameworks: Robin Sharma, Brian Solis, Simon Sinek…)
+- AI and digital transformation — always frame as "Human Augmented Intelligence" (Deepak Chopra)
+- Health innovation and policy (reference WEF, EMA, Farmaindustria by name — no invented article paths)
+- Inspiration: podcast/book recommendations only if widely known (TED, Fixable, HBR…)
+- Personal reflection: travel, disconnecting, team culture — authentic and varied, never repetitive
+${notesCtx}${fuentesContext}
+${learnCtx?'\nPERMANENT INSTRUCTIONS FROM PREVIOUS MONTHS (apply strictly, these take priority):\n'+learnCtx:''}
+${extraInstructions?'\nTEAM FEEDBACK (apply strictly): '+extraInstructions:''}
+
+${formatRules}
+
+LANGUAGE: ${langInstruction}
+
+EXACT FORMAT (no extra text outside this format):
+POST 1 | [Topic type]
+${lang==='all'?'🇬🇧 EN:\n[content]\n\n🇪🇸 ES:\n[content]\n\n🇵🇹 PT:\n[content]':'[content]'}
+---`;
+  try{const raw=await callClaude(prompt,5000);renderPosts(raw,prefix,mes,lang);}
+  catch(e){document.getElementById(prefix+'-results').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;}
+  finally{setLoading(prefix,false);}
+}
+
+// ── GENERATE SPECIAL ─────────────────────────
+async function generateSpecial(extraInstructions=''){
+  const brief=document.getElementById('sp-brief').value.trim();
+  if(!brief)return alert('Write the briefing first.');
+  const canal=document.getElementById('sp-canal').value;
+  const num=parseInt(document.getElementById('sp-num').value)||3;
+  const lang=langs['sp'];
+  const notesCtx=getNotesCtx('sp');
+  const learnCtx=getPermanent();
+  setLoading('sp',true);
+  document.getElementById('sp-results').innerHTML='';
+  const langInstruction=lang==='all'
+    ?'Output each copy THREE times: British English, Spanish (Spain), European Portuguese (Portugal). Label each.'
+    :`Write in ${langLabel(lang)}.`;
+  const prompt=`Generate exactly ${num} social media post(s) for Antonio Charrua on ${canal}.
+
+BRIEFING: ${brief}${notesCtx}
+${learnCtx?'\nPERMANENT INSTRUCTIONS (apply strictly):\n'+learnCtx:''}
+${extraInstructions?'\nTEAM FEEDBACK (apply strictly): '+extraInstructions:''}
+
+LANGUAGE: ${langInstruction}
+
+Apply all persona and tone rules. Hook opening. MANDATORY: every post must end with an open question to the audience.
+For links: ONLY use URLs provided in the notes. If none provided, write SOURCE_NEEDED: [type of source].
+Appropriate length for ${canal}. Direct, never empty filler phrases.
+
+EXACT FORMAT:
+COPY 1 | [Format/type]
+${lang==='all'?'🇬🇧 EN:\n[content]\n\n🇪🇸 ES:\n[content]\n\n🇵🇹 PT:\n[content]':'[content]'}
+---`;
+  try{const raw=await callClaude(prompt,4000);renderPosts(raw,'sp',canal,lang);}
+  catch(e){document.getElementById('sp-results').innerHTML=`<div class="error-msg">⚠️ ${e.message}</div>`;}
+  finally{setLoading('sp',false);}
+}
+
+// ── RENDER POSTS ──────────────────────────────
+function renderPosts(raw,prefix,label,lang){
+  const cont=document.getElementById(prefix+'-results');
+  const blocks=raw.split('---').map(s=>s.trim()).filter(s=>s.length>15);
+  if(!blocks.length){cont.innerHTML=`<div class="error-msg">Could not parse response. Try again.</div>`;return;}
+  gfbState[prefix]={val:'',text:'',editing:false};
+  let html=renderGeneralFbBox(prefix)+
+    `<div class="results-bar">
+      <span>${blocks.length} posts · ${label}</span>
+      <button class="btn btn-ghost btn-sm" onclick="copyAll('${prefix}')">📋 Copy all</button>
+      <button class="btn btn-green btn-sm" onclick="exportXL('${prefix}','${label}')">⬇ Excel</button>
+    </div>`;
+  blocks.forEach((b,i)=>{
+    const lines=b.split('\n').filter(l=>l.trim());
+    const h=(lines[0]||'').split('|').map(s=>s.trim());
+    const body=lines.slice(1).join('\n');
+    const fbKey=`${prefix}_${i}`;
+    if(!postFb[fbKey])postFb[fbKey]={text:'',editing:false};
+    const isMulti=lang==='all';
+    if(isMulti){
+      const enI=body.indexOf('🇬🇧 EN:');const esI=body.indexOf('🇪🇸 ES:');const ptI=body.indexOf('🇵🇹 PT:');
+      const en=esI>-1?body.slice(enI>-1?enI:0,esI).replace('🇬🇧 EN:','').trim():body;
+      const es=esI>-1&&ptI>-1?body.slice(esI,ptI).replace('🇪🇸 ES:','').trim():esI>-1?body.slice(esI).replace('🇪🇸 ES:','').trim():'';
+      const pt=ptI>-1?body.slice(ptI).replace('🇵🇹 PT:','').trim():'';
+      const eId=`${prefix}-en-${i}`,sId=`${prefix}-es-${i}`,pId=`${prefix}-pt-${i}`;
+      html+=`<div class="post-card" id="pc-${fbKey}">
+        <div class="post-header"><span class="post-num">${h[0]||'Post '+(i+1)}</span><div class="post-meta">${h[1]?`<span class="tag tag-topic">${h[1]}</span>`:''}<span class="tag tag-lang">🌐 EN·ES·PT</span></div></div>
+        <div class="post-body">
+          <div class="lang-lbl">🇬🇧 English</div><textarea id="${eId}" class="post-ta" rows="8">${en}</textarea>
+          <hr class="lang-div"><div class="lang-lbl">🇪🇸 Español</div><textarea id="${sId}" class="post-ta" rows="8">${es}</textarea>
+          <hr class="lang-div"><div class="lang-lbl">🇵🇹 Português</div><textarea id="${pId}" class="post-ta" rows="8">${pt}</textarea>
+          ${checkSourceNeeded(en+es+pt)}
+        </div>
+        <div class="post-footer">
+          <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${eId}')">Copy EN</button>
+          <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${sId}')">Copy ES</button>
+          <button class="btn btn-copy btn-sm" onclick="copyTa(this,'${pId}')">Copy PT</button>
+        </div>
+        ${renderPostFb(fbKey,prefix)}</div>`;
+    }else{
+      const taId=`${prefix}-ta-${i}`;const isLi=prefix==='li';
+      html+=`<div class="post-card" id="pc-${fbKey}">
+        <div class="post-header"><span class="post-num">${h[0]||'Post '+(i+1)}</span><div class="post-meta">${h[1]?`<span class="tag tag-topic">${h[1]}</span>`:''}<span class="tag tag-lang">${{en:'🇬🇧 EN',es:'🇪🇸 ES',pt:'🇵🇹 PT'}[lang]||'🇬🇧 EN'}</span></div></div>
+        <div class="post-body">
+          <textarea id="${taId}" class="post-ta" rows="${isLi?9:4}">${body}</textarea>
+          ${checkSourceNeeded(body)}
+        </div>
+        <div class="post-footer"><button class="btn btn-copy btn-sm" onclick="copyTa(this,'${taId}')">Copy</button></div>
+        ${renderPostFb(fbKey,prefix)}</div>`;
+    }
+  });
+  html+=`<div id="${prefix}-feedback-box"></div>`;
+  cont.innerHTML=html;
+}
+
+// Highlight SOURCE_NEEDED tags
+function checkSourceNeeded(text){
+  if(!text.includes('SOURCE_NEEDED'))return '';
+  return `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:6px;padding:8px 10px;margin-top:8px;font-size:12px;color:#C2410C;">⚠️ <strong>Enlace pendiente:</strong> Este post contiene SOURCE_NEEDED — sustituye ese marcador con el enlace real antes de publicar.</div>`;
+}
+
+// ── POST FEEDBACK ─────────────────────────────
+function renderPostFb(fbKey,prefix){
+  const fb=postFb[fbKey]||{text:'',editing:false};
+  return `<div class="post-fb-section">
+    <div class="post-fb-label">💬 Nota / Feedback</div>
+    ${fb.editing
+      ?`<div><textarea id="pfb-ta-${fbKey}" rows="2" style="width:100%;border:1.5px solid #F59E0B;border-radius:6px;padding:6px 8px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB;">${fb.text}</textarea>
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <button onclick="savePostFb('${fbKey}')" style="background:#F59E0B;color:white;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;">Guardar</button>
+            <button onclick="cancelPostFb('${fbKey}')" style="background:#eee;color:#444;border:none;border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:inherit;">Cancelar</button>
+          </div></div>`
+      :fb.text
+        ?`<div><div class="post-fb-note" onclick="editPostFb('${fbKey}')">${fb.text}</div>
+           <button class="btn-rewrite-post" id="rw-${fbKey}" onclick="rewritePost('${fbKey}','${prefix}')">↺ Rehacer con feedback</button></div>`
+        :`<div class="post-fb-empty" onclick="editPostFb('${fbKey}')">+ Add note or feedback…</div>`
+    }</div>`;
+}
+function editPostFb(k){postFb[k].editing=true;rerenderPostFb(k);}
+function cancelPostFb(k){postFb[k].editing=false;rerenderPostFb(k);}
+function savePostFb(k){const ta=document.getElementById(`pfb-ta-${k}`);if(ta)postFb[k].text=ta.value;postFb[k].editing=false;rerenderPostFb(k);}
+function rerenderPostFb(k){
+  const[pfx]=k.split('_');const card=document.getElementById(`pc-${k}`);if(!card)return;
+  const old=card.querySelector('.post-fb-section');if(old)old.outerHTML=renderPostFb(k,pfx);
+}
+async function rewritePost(fbKey,prefix){
+  const btn=document.getElementById(`rw-${fbKey}`);if(btn){btn.disabled=true;btn.textContent='⟳ Rewriting…';}
+  const fb=postFb[fbKey]?.text||'';if(!fb){if(btn){btn.disabled=false;btn.textContent='↺ Rehacer con feedback';}return;}
+  const[pfx,idx]=fbKey.split('_');
+  const ta=document.getElementById(`${pfx}-ta-${idx}`)||document.getElementById(`${pfx}-en-${idx}`);
+  const prev=ta?ta.value:'';
+  const lang=langs[pfx]||'en';
+  const isMulti=lang==='all';
+  const prompt=`Rewrite this social media post for Antonio Charrua applying the feedback. Keep persona, tone, hook structure. MANDATORY: end with an open question. For links: only use URLs from notes; otherwise write SOURCE_NEEDED.
+Previous: ${prev}
+FEEDBACK: ${fb}
+${isMulti?'Output all three versions: 🇬🇧 EN, 🇪🇸 ES, 🇵🇹 PT.':'Write in '+langLabel(lang)+'.'}
+No preamble, just the post(s).`;
+  try{
+    const raw=await callClaude(prompt,1500);
+    if(isMulti){
+      const enI=raw.indexOf('🇬🇧 EN:');const esI=raw.indexOf('🇪🇸 ES:');const ptI=raw.indexOf('🇵🇹 PT:');
+      const en=esI>-1?raw.slice(enI>-1?enI:0,esI).replace('🇬🇧 EN:','').trim():raw;
+      const es=esI>-1&&ptI>-1?raw.slice(esI,ptI).replace('🇪🇸 ES:','').trim():'';
+      const pt=ptI>-1?raw.slice(ptI).replace('🇵🇹 PT:','').trim():'';
+      const eEl=document.getElementById(`${pfx}-en-${idx}`);const sEl=document.getElementById(`${pfx}-es-${idx}`);const pEl=document.getElementById(`${pfx}-pt-${idx}`);
+      if(eEl)eEl.value=en;if(sEl)sEl.value=es;if(pEl)pEl.value=pt;
+    }else{if(ta)ta.value=raw.trim();}
+  }catch(e){console.error(e);}
+  if(btn){btn.disabled=false;btn.textContent='↺ Rehacer con feedback';}
+}
+
+// ── GENERAL FEEDBACK ─────────────────────────
+function renderGeneralFbBox(prefix){
+  const gfb=gfbState[prefix];
+  const valBtns=['Aprobado','Revisar','Rechazar'].map(v=>{
+    const cls=v==='Aprobado'?'aprobado':v==='Revisar'?'revisar':'rechazar';
+    return `<button class="val-btn ${gfb.val===v?cls:''}" onclick="setGfbVal('${prefix}','${v}')">${v==='Aprobado'?'✅':v==='Revisar'?'🔄':'❌'} ${v}</button>`;
+  }).join('');
+  return `<div class="general-fb" id="gfb-box-${prefix}">
+    <div class="general-fb-title">💬 General feedback</div>
+    <div class="val-row">${valBtns}</div>
+    ${gfb.editing
+      ?`<textarea id="gfb-ta-${prefix}" rows="2" style="width:100%;border:1.5px solid #F59E0B;border-radius:7px;padding:7px;font-size:12px;font-family:inherit;resize:none;outline:none;background:#FFFBEB;">${gfb.text}</textarea>
+        <div style="display:flex;gap:7px;margin-top:6px;">
+          <button onclick="saveGfb('${prefix}')" style="background:#F59E0B;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+          <button onclick="cancelGfb('${prefix}')" style="background:#eee;color:#444;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Cancelar</button>
+        </div>`
+      :gfb.text
+        ?`<div class="post-fb-note" onclick="editGfb('${prefix}')">${gfb.text}</div>`
+        :`<div class="post-fb-empty" onclick="editGfb('${prefix}')">+ Add general comment…</div>`
+    }
+    ${(gfb.text||gfb.val)&&!gfb.editing?`<button class="btn-regen-fb" onclick="regenWithGfb('${prefix}')">↺ Regenerate with this feedback</button>`:''}
+  </div>`;
+}
+function setGfbVal(p,v){gfbState[p].val=gfbState[p].val===v?'':v;refreshGfb(p);}
+function editGfb(p){gfbState[p].editing=true;refreshGfb(p);}
+function cancelGfb(p){gfbState[p].editing=false;refreshGfb(p);}
+function saveGfb(p){const ta=document.getElementById(`gfb-ta-${p}`);if(ta)gfbState[p].text=ta.value;gfbState[p].editing=false;refreshGfb(p);}
+function refreshGfb(p){const box=document.getElementById(`gfb-box-${p}`);if(!box)return;const tmp=document.createElement('div');tmp.innerHTML=renderGeneralFbBox(p);box.replaceWith(tmp.firstElementChild);}
+async function regenWithGfb(p){
+  const gfb=gfbState[p];if(!gfb.text&&!gfb.val)return;
+  const instr=`${gfb.val?'Rating: '+gfb.val+'. ':''}${gfb.text}`;
+  const prev=JSON.parse(JSON.stringify(gfb));
+  if(p==='sp')await generateSpecial(instr);else await generate(p,instr);
+  Object.assign(gfbState[p],prev);gfbState[p].editing=false;refreshGfb(p);
+}
+
+// ── EXPORT EXCEL ──────────────────────────────
+function exportXL(prefix,label){
+  const cards=document.querySelectorAll(`#${prefix}-results .post-card`);
+  if(!cards.length){alert('No posts to export.');return;}
+  try{
+    if(!window.XLSX){alert('Excel library still loading.');return;}
+    const rows=[['Post','Topic / Type','Copy (EN / main)','Copy (ES)','Copy (PT)','Feedback']];
+    cards.forEach((c,i)=>{
+      const h=[...c.querySelectorAll('.post-header .post-num,.post-header .tag')].map(e=>e.textContent.trim());
+      const tas=c.querySelectorAll('.post-ta');
+      const fbEl=c.querySelector('.post-fb-note');
+      rows.push([h[0]||`Post ${i+1}`,h[1]||'',tas[0]?.value||'',tas[1]?.value||'',tas[2]?.value||'',fbEl?fbEl.textContent.trim():'']);
+    });
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:10},{wch:24},{wch:70},{wch:70},{wch:70},{wch:30}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,prefix==='li'?'LinkedIn':'X');
+    XLSX.writeFile(wb,`Charrua_${prefix.toUpperCase()}_${(label||'').replace(/\s/g,'_')}.xlsx`);
+  }catch(e){alert('Export error: '+e.message);}
+}
+
+// ── COPY UTILS ────────────────────────────────
+function copyTa(btn,id){navigator.clipboard.writeText(document.getElementById(id)?.value||'').then(()=>{const o=btn.textContent;btn.textContent='✓ Copied';btn.classList.add('copied');setTimeout(()=>{btn.textContent=o;btn.classList.remove('copied');},2000);});}
+function copyAll(prefix){const all=[...document.querySelectorAll(`#${prefix}-results .post-ta`)].map((ta,i)=>`--- POST ${i+1} ---\n${ta.value}`).join('\n\n');navigator.clipboard.writeText(all).then(()=>alert('All posts copied.'));}
+function setLoading(p,on){document.getElementById(`btn-gen-${p}`).disabled=on;document.getElementById(`${p}-loading`).classList.toggle('show',on);}
+</script>
+</body>
+</html>
